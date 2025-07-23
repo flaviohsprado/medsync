@@ -25,7 +25,7 @@ export const Route = createFileRoute("/organizations/$id/organizations/")({
 function RouteComponent() {
    const trpc = useTRPC();
    const { id } = useParams({ from: "/organizations/$id/organizations/" });
-   const { data: organizations, isLoading } = useQuery(trpc.organization.getAllOrganizations.queryOptions());
+   const { data: organizations, isLoading } = useQuery(trpc.organization.getChildrenOrganizations.queryOptions({ id }));
 
    const [searchTerm, setSearchTerm] = useState("");
    const [isCreateOpen, setIsCreateOpen] = useState(false);

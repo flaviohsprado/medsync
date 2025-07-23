@@ -2,12 +2,12 @@
 
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { TRPCRouter } from "@/server/routers";
-import "@/styles.css";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
+import appCss from "../styles.css?url";
 
 interface RouterAppContext {
    trpc: TRPCOptionsProxy<TRPCRouter>;
@@ -28,6 +28,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
             title: "TanStack Start Starter",
          },
       ],
+      links: [{ rel: "stylesheet", href: appCss }],
    }),
    component: RootComponent,
 });

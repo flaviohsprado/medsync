@@ -28,8 +28,29 @@ export const organizationRouter = createTRPCRouter({
       return org;
    }),
 
+   getChildrenOrganizations: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      if (ctx.user.systemRole !== "super_admin" && ctx.user.organizationId !== input.id) {
+         throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Insufficient permissions to read this organization",
+         });
+      }
+
+      const org = await ctx.db.query.organization.findMany({
+         where: eq(organization.parentId, input.id),
+      });
+
+      if (!org) {
+         throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Organization not found",
+         });
+      }
+
+      return org;
+   }),
+
    getActiveOrganization: protectedProcedure.query(async ({ ctx }) => {
-      console.log("====================> getActiveOrganization", ctx);
       const currentOrganization = await ctx.db.query.organization.findFirst({
          where: eq(organization.id, ctx.user.organizationId ?? ""),
       });
