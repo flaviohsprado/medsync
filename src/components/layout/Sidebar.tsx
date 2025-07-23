@@ -32,6 +32,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
    const filteredItems = ALL_NAVIGATION_ITEMS.filter((item) => {
       if (!user) return false;
 
+      console.log("user", user);
+
       // 1. Check if the user's system role is allowed to see the item
       if (item.systemRoles && !item.systemRoles.includes(user.systemRole as SystemRole)) {
          return false;
@@ -45,6 +47,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       return true;
    });
+   console.log(filteredItems);
 
    const isActiveRoute = (path: string) => {
       const { pathname } = routerState.location;

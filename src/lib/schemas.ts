@@ -46,28 +46,9 @@ export const UserFormSchema = z.object({
    organizationId: z.string().min(1, "Organização é obrigatória"),
    unitId: z.string().optional(),
    systemRole: z.enum(["super_admin", "admin", "user"]),
-   profile: z.string().optional(),
+   profileId: z.string().optional(),
 });
 export type UserFormData = z.infer<typeof UserFormSchema>;
-
-export const updateUserSchema = z.object({
-   id: z.string().min(1, "User ID is required"),
-   name: z.string().optional(),
-   organizationId: z.string().optional(),
-   unitId: z.string().optional(),
-   systemRole: z.enum(["super_admin", "admin", "user"]).optional(),
-   profile: z.string().optional(),
-});
-export type UpdateUserFormData = z.infer<typeof updateUserSchema>;
-
-export const assignRoleSchema = z.object({
-   userId: z.string().min(1, "User ID is required"),
-   systemRole: z.enum(["super_admin", "admin", "user"]),
-   organizationId: z.string().optional(),
-   unitId: z.string().optional(),
-   profile: z.string().optional(),
-});
-export type AssignRoleFormData = z.infer<typeof assignRoleSchema>;
 
 export const ProfileFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),

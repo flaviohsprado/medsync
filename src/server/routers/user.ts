@@ -1,6 +1,5 @@
 import { PERMISSIONS } from "@/constants";
-import { canAssignRole } from "@/lib/permissions";
-import { UserFormSchema, assignRoleSchema, updateUserSchema } from "@/lib/schemas";
+import { UserFormSchema } from "@/lib/schemas";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -244,86 +243,42 @@ export const userRouter = createTRPCRouter({
    }),
 
    // Update user
-   update: protectedProcedure.input(updateUserSchema).mutation(async ({ ctx, input }) => {
-      // Get existing user first
-      const [existingUser] = await ctx.db.select().from(user).where(eq(user.id, input.id));
+   update: protectedProcedure
+      .input(z.object({ id: z.string(), data: UserFormSchema }))
+      .mutation(async ({ ctx, input }) => {
+         // Get existing user first
+         const [existingUser] = await ctx.db.select().from(user).where(eq(user.id, input.id));
 
-      if (!existingUser) {
-         throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "User not found",
-         });
-      }
-
-      // Additional role-based checks
-      if (ctx.user?.systemRole === "admin") {
-         // Admin can only update users in their organization
-         if ((existingUser as any).organizationId !== ctx.user.organizationId) {
+         if (!existingUser) {
             throw new TRPCError({
-               code: "FORBIDDEN",
-               message: "Cannot update user from different organization",
+               code: "NOT_FOUND",
+               message: "User not found",
             });
          }
-      } else if (ctx.user?.systemRole === "user") {
-         // Regular users can only update themselves
-         if (existingUser.id !== ctx.user.id) {
-            throw new TRPCError({
-               code: "FORBIDDEN",
-               message: "Cannot update other users",
-            });
+
+         // Additional role-based checks
+         if (ctx.user?.systemRole === "admin") {
+            // Admin can only update users in their organization
+            if ((existingUser as any).organizationId !== ctx.user.organizationId) {
+               throw new TRPCError({
+                  code: "FORBIDDEN",
+                  message: "Cannot update user from different organization",
+               });
+            }
+         } else if (ctx.user?.systemRole === "user") {
+            // Regular users can only update themselves
+            if (existingUser.id !== ctx.user.id) {
+               throw new TRPCError({
+                  code: "FORBIDDEN",
+                  message: "Cannot update other users",
+               });
+            }
          }
-      }
 
-      const updateData: any = {
-         updatedAt: new Date(),
-      };
+         const [updatedUser] = await ctx.db.update(user).set(input.data).where(eq(user.id, input.id)).returning();
 
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.organizationId !== undefined) updateData.organizationId = input.organizationId;
-      if (input.unitId !== undefined) updateData.unitId = input.unitId;
-      if (input.systemRole !== undefined) updateData.systemRole = input.systemRole;
-      if (input.profile !== undefined) updateData.profileId = input.profile;
-
-      const [updatedUser] = await ctx.db.update(user).set(updateData).where(eq(user.id, input.id)).returning();
-
-      return updatedUser;
-   }),
-
-   // Assign role to user
-   assignRole: protectedProcedure.input(assignRoleSchema).mutation(async ({ ctx, input }) => {
-      // Get target user
-      const [targetUser] = await ctx.db.select().from(user).where(eq(user.id, input.userId));
-
-      if (!targetUser) {
-         throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "User not found",
-         });
-      }
-
-      // Check if current user can assign this role
-      const roleCheck = canAssignRole(ctx.user!, input.systemRole, (targetUser as any).organizationId);
-      if (!roleCheck.allowed) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message: roleCheck.reason || "Cannot assign this role",
-         });
-      }
-
-      // Update user with new role
-      const updateData: any = {
-         systemRole: input.systemRole,
-         updatedAt: new Date(),
-      };
-
-      if (input.organizationId !== undefined) updateData.organizationId = input.organizationId;
-      if (input.unitId !== undefined) updateData.unitId = input.unitId;
-      if (input.profile !== undefined) updateData.profileId = input.profile;
-
-      const [updatedUser] = await ctx.db.update(user).set(updateData).where(eq(user.id, input.userId)).returning();
-
-      return updatedUser;
-   }),
+         return updatedUser;
+      }),
 
    // Get users by organization
    getByOrganization: protectedProcedure
