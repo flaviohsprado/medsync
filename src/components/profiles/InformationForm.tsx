@@ -7,17 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 interface InformationFormProps {
    form: UseFormReturn<ProfileFormData>;
-   selectedScope: "organization" | "unit" | "self";
-   handleScopeChange: (value: "organization" | "unit" | "self") => void;
-   isRootOrganization: boolean;
+   profileType: "user" | "admin" | "super_admin";
+   handleProfileTypeChange: (value: "user" | "admin" | "super_admin") => void;
 }
 
-export function ProfileInformationForm({
-   form,
-   selectedScope,
-   handleScopeChange,
-   isRootOrganization,
-}: InformationFormProps) {
+export function ProfileInformationForm({ form, profileType, handleProfileTypeChange }: InformationFormProps) {
    return (
       <div className="space-y-6">
          <InputTextField form={form} name="name" label="Nome do Perfil" placeholder="Ex: Gerente de Unidade" />
@@ -28,33 +22,25 @@ export function ProfileInformationForm({
             placeholder="Descreva as responsabilidades deste perfil"
          />
 
-         {/* Scope Selection */}
+         {/* Profile Type Selection */}
          <div className="space-y-2">
-            <Label htmlFor="scope-select" className="text-sm font-medium">
-               Nível de Acesso
+            <Label htmlFor="profile-type-select" className="text-sm font-medium">
+               Tipo de Perfil
             </Label>
-            <Select value={selectedScope} onValueChange={handleScopeChange}>
-               <SelectTrigger id="scope-select">
-                  <SelectValue placeholder="Selecione o nível de acesso" />
+            <Select value={profileType} onValueChange={handleProfileTypeChange}>
+               <SelectTrigger id="profile-type-select">
+                  <SelectValue placeholder="Selecione o tipo de perfil" />
                </SelectTrigger>
                <SelectContent>
-                  <SelectItem value="organization">Organização</SelectItem>
-                  <SelectItem value="unit">Unidade</SelectItem>
-                  <SelectItem value="self">Próprio</SelectItem>
+                  <SelectItem value="user">Usuário (Permissões Customizadas)</SelectItem>
+                  <SelectItem value="admin">Administrador (Todas as Permissões)</SelectItem>
+                  <SelectItem value="super_admin">Super Admin (Todas as Permissões)</SelectItem>
                </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground">
-               {selectedScope === "organization" && "Acesso aos dados da organização inteira"}
-               {selectedScope === "unit" && "Acesso limitado à unidade específica"}
-               {selectedScope === "self" && "Acesso limitado aos próprios dados"}
+               {profileType === "user" && "Você definirá as permissões específicas na próxima etapa."}
+               {profileType !== "user" && "Este perfil terá acesso total a todos os recursos."}
             </p>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-               <p className="text-sm text-blue-800">
-                  <strong>Nota:</strong> As permissões específicas serão definidas na próxima etapa. O nível de acesso
-                  determina o escopo onde essas permissões se aplicam.
-               </p>
-            </div>
          </div>
       </div>
    );

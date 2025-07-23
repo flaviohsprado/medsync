@@ -81,6 +81,6 @@ export const ProfileFormSchema = z.object({
             scope: z.enum(["organization", "unit", "self"]).optional(),
          }),
       )
-      .min(1, "Selecione pelo menos uma permissão"),
+      .optional(),
 });
 export type ProfileFormData = z.infer<typeof ProfileFormSchema>;

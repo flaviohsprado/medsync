@@ -2,10 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { PERMISSIONS } from "@/constants";
 import { ProfileFormSchema, type ProfileFormData } from "@/lib/schemas";
-import { groupPermissionsByResource } from "@/lib/utils";
 import { useTRPC } from "@/server/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { Settings, Shield } from "lucide-react";
 import { useState } from "react";
@@ -39,14 +38,10 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { id: organizationId } = useParams({ from: "/organizations/$id/profiles/" });
-   const { data: organization } = useQuery(trpc.organization.getActiveOrganization.queryOptions());
 
-   const isRootOrganization = !organization?.parentId;
+   const [profileType, setProfileType] = useState<"user" | "admin" | "super_admin">("user");
 
-   // State for the selected scope that will be applied to all permissions
-   const [selectedScope, setSelectedScope] = useState<"organization" | "unit" | "self">("unit");
-
-   const { mutate: createProfile } = useMutation(
+   const { mutate: createProfile, isPending } = useMutation(
       trpc.profile.create.mutationOptions({
          onSuccess: () => {
             queryClient.invalidateQueries({
@@ -55,14 +50,11 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
             toast.success("Perfil criado com sucesso");
             onOpenChange?.(false);
          },
-         onError: () => {
-            toast.error("Erro ao criar perfil");
+         onError: (error) => {
+            toast.error(`Erro ao criar perfil: ${error.message}`);
          },
       }),
    );
-
-   const groupedPermissions = groupPermissionsByResource(PERMISSIONS);
-   const resources = Object.keys(groupedPermissions).sort();
 
    const form = useForm<ProfileFormData>({
       resolver: zodResolver(ProfileFormSchema),
@@ -74,129 +66,116 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
       },
    });
 
-   // Toggle a specific action for a resource
    const toggleAction = (resource: string, action: "create" | "read" | "update" | "delete", enabled: boolean) => {
       const currentPermissions = form.getValues().permissions || [];
-      const existingPermissionIndex = currentPermissions.findIndex((p) => p.resource === resource);
+      let newPermissions = [...currentPermissions];
+      const permissionIndex = newPermissions.findIndex((p) => p.resource === resource);
 
-      const newPermissions = [...currentPermissions];
-
-      if (existingPermissionIndex >= 0) {
-         // Permission exists, update it
-         const existingPermission = newPermissions[existingPermissionIndex];
-         let newActions = [...existingPermission.actions];
-
-         if (enabled) {
-            // Add action if not present
-            if (!newActions.includes(action)) {
-               newActions.push(action);
+      if (enabled) {
+         // If a permission object for this resource already exists, add the action
+         if (permissionIndex > -1) {
+            const permission = newPermissions[permissionIndex];
+            if (permission && !permission.actions.includes(action)) {
+               permission.actions.push(action);
             }
          } else {
-            // Remove action
-            newActions = newActions.filter((a) => a !== action);
+            // Otherwise, create a new permission object for this resource
+            newPermissions.push({
+               resource,
+               actions: [action],
+               scope: "organization", // Default scope
+            });
          }
-
-         if (newActions.length > 0) {
-            // Update permission with new actions and current scope
-            newPermissions[existingPermissionIndex] = {
-               ...existingPermission,
-               actions: newActions,
-               scope: selectedScope,
-            };
-         } else {
-            // Remove permission if no actions left
-            newPermissions.splice(existingPermissionIndex, 1);
+      } else {
+         // If the action is being disabled
+         if (permissionIndex > -1) {
+            const permission = newPermissions[permissionIndex];
+            if (permission) {
+               // Remove the action from the array
+               permission.actions = permission.actions.filter((a) => a !== action);
+               // If no actions are left, remove the entire permission object
+               if (permission.actions.length === 0) {
+                  newPermissions.splice(permissionIndex, 1);
+               }
+            }
          }
-      } else if (enabled) {
-         // Create new permission with current scope
-         newPermissions.push({
-            resource,
-            actions: [action],
-            scope: selectedScope,
-         });
       }
 
       form.setValue("permissions", newPermissions, { shouldValidate: true });
    };
 
-   // Update all existing permissions when scope changes
-   const handleScopeChange = (newScope: "organization" | "unit" | "self") => {
-      setSelectedScope(newScope);
+   const handleFinish = form.handleSubmit(async (data) => {
+      let finalData = { ...data };
 
-      // Update all existing permissions with the new scope
-      const currentPermissions = form.getValues().permissions || [];
-      const updatedPermissions = currentPermissions.map((permission) => ({
-         ...permission,
-         scope: newScope,
-      }));
-
-      form.setValue("permissions", updatedPermissions, { shouldValidate: true });
-   };
-
-   const handleNext = async (methods: any) => {
-      // Since methods.current.id is not available, we'll determine the step based on navigation state
-      if (!methods.isLast) {
-         // We're on the basic info step if not on last step
-         const fieldsToValidate = ["name", "description"] as const;
-         const isValid = await form.trigger(fieldsToValidate);
-         if (isValid) {
-            // Always proceed to permissions step in simplified system
-            methods.next();
-         }
-      } else {
-         // We're on the permissions step (last step), so submit
-         const formData = form.getValues();
-         createProfile(formData);
+      // If the profile type is admin or super_admin, override permissions with all available permissions.
+      if (profileType === "admin" || profileType === "super_admin") {
+         finalData.permissions = PERMISSIONS.map((p) => ({ ...p, scope: "organization" }));
       }
-   };
+
+      // Ensure user profiles have at least one permission.
+      if (profileType === "user" && (!finalData.permissions || finalData.permissions.length === 0)) {
+         toast.error("Perfis do tipo 'Usuário' devem ter pelo menos uma permissão selecionada.");
+         return;
+      }
+
+      createProfile(finalData);
+   });
 
    return (
       <Stepper.Provider className="space-y-6">
          {({ methods }) => (
             <>
                <Stepper.Navigation>
-                  {methods.all.map((step) => (
-                     <Stepper.Step key={step.id} of={step.id} icon={step.icon} />
-                  ))}
+                  {/* Conditionally render the second step indicator */}
+                  <Stepper.Step of={ProfileFormStep.BASIC_INFO} icon={<Shield className="size-4" />} />
+                  {profileType === "user" && (
+                     <Stepper.Step of={ProfileFormStep.PERMISSIONS} icon={<Settings className="size-4" />} />
+                  )}
                </Stepper.Navigation>
 
                <Form {...form}>
-                  <form className="space-y-4">
+                  <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                      <Stepper.Panel>
-                        {methods.switch({
-                           [ProfileFormStep.BASIC_INFO]: () => (
-                              <ProfileInformationForm
-                                 form={form}
-                                 selectedScope={selectedScope}
-                                 handleScopeChange={handleScopeChange}
-                                 isRootOrganization={isRootOrganization}
-                              />
-                           ),
-                           [ProfileFormStep.PERMISSIONS]: () => (
-                              <PermissionForm
-                                 form={form}
-                                 resources={resources}
-                                 groupedPermissions={groupedPermissions}
-                                 toggleAction={toggleAction}
-                              />
-                           ),
-                        })}
+                        {methods.current.id === ProfileFormStep.BASIC_INFO && (
+                           <ProfileInformationForm
+                              form={form}
+                              profileType={profileType}
+                              handleProfileTypeChange={setProfileType}
+                           />
+                        )}
+                        {methods.current.id === ProfileFormStep.PERMISSIONS && profileType === "user" && (
+                           <PermissionForm
+                              form={form}
+                              resources={Object.keys(groupPermissionsByResource(PERMISSIONS)).sort()}
+                              groupedPermissions={groupPermissionsByResource(PERMISSIONS)}
+                              toggleAction={(resource, action, enabled) => {
+                                 toggleAction(resource, action, enabled);
+                              }}
+                           />
+                        )}
                      </Stepper.Panel>
 
                      <Stepper.Controls>
-                        {!methods.isFirst && (
-                           <Button type="button" variant="secondary" onClick={methods.prev}>
+                        {profileType === "user" && !methods.isFirst && (
+                           <Button type="button" variant="secondary" onClick={methods.prev} disabled={isPending}>
                               Anterior
                            </Button>
                         )}
 
-                        {!methods.isLast ? (
-                           <Button type="button" onClick={() => handleNext(methods)}>
+                        {profileType === "user" && !methods.isLast ? (
+                           <Button
+                              type="button"
+                              onClick={async () => {
+                                 const isValid = await form.trigger(["name", "description"]);
+                                 if (isValid) methods.next();
+                              }}
+                              disabled={isPending}
+                           >
                               Próximo
                            </Button>
                         ) : (
-                           <Button type="button" onClick={() => handleNext(methods)}>
-                              Criar Perfil
+                           <Button type="button" onClick={handleFinish} disabled={isPending}>
+                              {isPending ? "Criando..." : "Criar Perfil"}
                            </Button>
                         )}
                      </Stepper.Controls>
@@ -206,4 +185,17 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
          )}
       </Stepper.Provider>
    );
+}
+
+// Helper function to be placed inside the form component or imported
+function groupPermissionsByResource(permissions: readonly any[]) {
+   const grouped: Record<string, any> = {};
+   permissions.forEach((p) => {
+      if (!grouped[p.resource]) {
+         grouped[p.resource] = { ...p };
+      } else {
+         grouped[p.resource].actions = [...new Set([...grouped[p.resource].actions, ...p.actions])];
+      }
+   });
+   return grouped;
 }

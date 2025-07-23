@@ -47,7 +47,7 @@ function ProfilesPage() {
                      Novo Perfil
                   </Button>
                </DialogTrigger>
-               <DialogContent className="sm:max-w-[500px]">
+               <DialogContent className="sm:max-w-xl">
                   <DialogHeader>
                      <DialogTitle>Criar Novo Perfil</DialogTitle>
                      <DialogDescription>Adicione um novo perfil ao sistema</DialogDescription>
