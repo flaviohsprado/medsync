@@ -1,7 +1,7 @@
-import { useOrganizationUnit } from "@/hooks/use-organization-unit";
-import { HealthUnitFormSchema, type HealthUnitFormData } from "@/lib/form-schemas";
+import { UnitFormSchema, type UnitFormData } from "@/lib/schemas";
+import { useTRPC } from "@/server/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, MapPin } from "lucide-react";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
@@ -33,12 +33,13 @@ interface HealthUnitFormProps {
 }
 
 export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormProps) {
+   const trpc = useTRPC();
    const queryClient = useQueryClient();
 
-   const { createUnit, isPending } = useOrganizationUnit(organizationId);
+   const { mutate: createUnit, isPending } = useMutation(trpc.unit.create.mutationOptions());
 
-   const form = useForm<HealthUnitFormData>({
-      resolver: zodResolver(HealthUnitFormSchema),
+   const form = useForm<UnitFormData>({
+      resolver: zodResolver(UnitFormSchema),
       defaultValues: {
          name: "",
          email: "",
@@ -57,7 +58,7 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
       },
    });
 
-   const onSubmit = async (data: HealthUnitFormData) => {
+   const onSubmit = async (data: UnitFormData) => {
       createUnit({
          name: data.name,
          email: data.email ?? "",
@@ -73,7 +74,7 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
             state: data.address.state,
             zipCode: data.address.zipCode,
          },
-         parentId: organizationId,
+         organizationId,
       });
 
       queryClient.invalidateQueries({
@@ -85,7 +86,7 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
       onOpenChange(false);
    };
 
-   const onError = (errors: FieldErrors<HealthUnitFormData>) => {
+   const onError = (errors: FieldErrors<UnitFormData>) => {
       console.log(errors);
    };
 

@@ -1,4 +1,4 @@
-import type { ProfileFormData } from "@/lib/form-schemas";
+import type { ProfileFormData } from "@/lib/schemas";
 import { getResourceDisplayInfo } from "@/lib/utils";
 import type { Permission } from "@/types";
 import type { UseFormReturn } from "react-hook-form";

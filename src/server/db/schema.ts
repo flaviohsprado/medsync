@@ -59,7 +59,7 @@ export const unit = pgTable(
       email: text("email"),
       manager: text("manager"),
       specialties: text("specialties"),
-      address: jsonb("address").$type<AddressFormData>(),
+      address: jsonb("address").$type<AddressFormData>().notNull(),
       organizationId: text("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),

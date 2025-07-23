@@ -1,19 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CustomOrganization } from "@/types";
+import type { Unit } from "@/types";
 import { Edit, Mail, MapPin, Phone, Trash2, Users } from "lucide-react";
 import { Button } from "../ui/button";
 
-interface HealthUnitCardProps {
-   healthunit: CustomOrganization;
+interface UnitCardProps {
+   unit: Unit;
 }
 
-export function HealthUnitCard({ healthunit }: HealthUnitCardProps) {
+export function UnitCard({ unit }: UnitCardProps) {
    const handleDelete = (postId: string) => {
       console.log(postId);
    };
 
    return (
-      <Card key={healthunit.id} className="hover:shadow-md transition-shadow">
+      <Card key={unit.id} className="hover:shadow-md transition-shadow">
          <CardHeader className="pb-4">
             <div className="flex items-start justify-between">
                <div className="flex items-center gap-3">
@@ -21,15 +21,15 @@ export function HealthUnitCard({ healthunit }: HealthUnitCardProps) {
                      <MapPin className="h-5 w-5 text-medical" />
                   </div>
                   <div>
-                     <CardTitle className="text-lg">{healthunit.name}</CardTitle>
-                     <CardDescription className="text-sm">Responsável: {healthunit.metadata.manager}</CardDescription>
+                     <CardTitle className="text-lg">{unit.name}</CardTitle>
+                     <CardDescription className="text-sm">Responsável: {unit.manager}</CardDescription>
                   </div>
                </div>
                <div className="flex gap-1">
                   <Button variant="ghost" size="sm">
                      <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(healthunit.id)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(unit.id)}>
                      <Trash2 className="h-4 w-4" />
                   </Button>
                </div>
@@ -40,28 +40,27 @@ export function HealthUnitCard({ healthunit }: HealthUnitCardProps) {
                <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                     Endereço: {healthunit.metadata.address.street || "N/A"},{" "}
-                     {healthunit.metadata.address.number || "N/A"} - {healthunit.metadata.address.neighborhood || "N/A"}{" "}
-                     - {healthunit.metadata.address.city || "N/A"} - {healthunit.metadata.address.state || "N/A"}
+                     Endereço: {unit.address.street || "N/A"}, {unit.address.number || "N/A"} -{" "}
+                     {unit.address.neighborhood || "N/A"} - {unit.address.city || "N/A"} - {unit.address.state || "N/A"}
                   </p>
                </div>
                <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{healthunit.metadata.phone}</span>
+                  <span className="text-sm">{unit.phone}</span>
                </div>
-               {healthunit.metadata.email && (
+               {unit.email && (
                   <div className="flex items-center gap-2">
                      <Mail className="h-4 w-4 text-muted-foreground" />
-                     <span className="text-sm">{healthunit.metadata.email}</span>
+                     <span className="text-sm">{unit.email}</span>
                   </div>
                )}
             </div>
 
             <div className="flex items-center gap-2 pt-2 border-t">
                <Users className="h-4 w-4 text-muted-foreground" />
-               {/*<span className="text-sm font-medium">Capacidade: {healthunit.metadata.capacity}</span>
-                <Badge variant={healthunit.metadata.isActive ? "default" : "secondary"} className="ml-auto">
-                  {healthunit.metadata.isActive ? "Ativo" : "Inativo"}
+               {/*<span className="text-sm font-medium">Capacidade: {unit.capacity}</span>
+                <Badge variant={unit.metadata.isActive ? "default" : "secondary"} className="ml-auto">
+                  {unit.metadata.isActive ? "Ativo" : "Inativo"}
                </Badge> */}
             </div>
 

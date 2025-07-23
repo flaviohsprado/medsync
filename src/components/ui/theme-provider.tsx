@@ -1,6 +1,6 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import * as React from "react";
-import { SquaredIconButton } from "./squared-icon-button";
+import { Button } from "./button";
 
 interface ValueObject {
    [themeName: string]: string;
@@ -352,9 +352,8 @@ export const ThemeToggler = () => {
    }, [theme, forcedTheme, themes]);
 
    return (
-      <SquaredIconButton onClick={() => setTheme(nextTheme)}>
+      <Button variant={"ghost"} onClick={() => setTheme(nextTheme)}>
          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-         Toggle theme
-      </SquaredIconButton>
+      </Button>
    );
 };

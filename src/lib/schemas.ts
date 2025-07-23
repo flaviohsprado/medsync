@@ -37,7 +37,7 @@ export const UnitFormSchema = z.object({
    address: AddressFormSchema,
    organizationId: z.string(),
 });
-export type UnitFormSchema = z.infer<typeof UnitFormSchema>;
+export type UnitFormData = z.infer<typeof UnitFormSchema>;
 
 export const UserFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),

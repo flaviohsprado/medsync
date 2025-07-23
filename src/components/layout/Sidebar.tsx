@@ -21,9 +21,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
    const routerState = useRouterState();
    const { data: session } = useSession();
 
-   const { data: organization } = useQuery(trpc.organization.getActiveOrganization.queryOptions());
+   const { data: organization, error } = useQuery(trpc.organization.getActiveOrganization.queryOptions());
 
-   console.log(organization);
+   console.log("====================> organization", organization);
+   console.log("====================> error", error);
 
    // Extract organization ID from the current path
    const getOrganizationIdFromPath = () => {

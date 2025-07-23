@@ -1,4 +1,4 @@
-import type { ProfileFormData } from "@/lib/form-schemas";
+import type { ProfileFormData } from "@/lib/schemas";
 import type { UseFormReturn } from "react-hook-form";
 import { InputTextField } from "../shared/InputTextField";
 import { InputTextareaField } from "../shared/InputTextareaField";

@@ -1,10 +1,10 @@
-import type { HealthUnitFormData } from "@/lib/form-schemas";
+import type { UnitFormData } from "@/lib/schemas";
 import type { UseFormReturn } from "react-hook-form";
 import { CEPInput } from "../shared/CEPInput";
 import { InputTextField } from "../shared/InputTextField";
 
 interface AddressFormProps {
-   form: UseFormReturn<HealthUnitFormData>;
+   form: UseFormReturn<UnitFormData>;
 }
 
 export function AddressForm({ form }: AddressFormProps) {

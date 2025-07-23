@@ -66,11 +66,11 @@ export const createTRPCContext = async (opts: CreateNextContextOptions): Promise
       }
    }
 
-   console.log("===================> DB", db);
-
    const currentOrganization = await db.query.organization.findFirst({
       where: eq(organization.id, userAux.organizationId ?? ""),
    });
+
+   if (!currentOrganization) throw new Error("Organization not found");
 
    return {
       headers: req.headers,

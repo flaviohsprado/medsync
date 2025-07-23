@@ -2,7 +2,7 @@ import { canAccessRoute, hasPermission } from "@/lib/permissions";
 import { auth as authClient, type User } from "@/server/auth";
 import { db } from "@/server/db";
 import { user } from "@/server/db/auth-schema";
-import { profile } from "@/server/db/schema";
+import { organization, profile } from "@/server/db/schema";
 import { trpcRouter } from "@/server/routers";
 import type { Context } from "@/types";
 import { createServerFileRoute } from "@tanstack/react-start/server";
@@ -14,7 +14,7 @@ const createTRPCContext = async (opts: { req: Request }): Promise<Context> => {
       headers: opts.req.headers,
    });
 
-   let userAux: User | null = null;
+   let userAux: User = {} as User;
    if (session?.user) {
       try {
          const dbUser = await db.query.user.findFirst({
@@ -32,7 +32,7 @@ const createTRPCContext = async (opts: { req: Request }): Promise<Context> => {
 
             if (dbUser.systemRole === "user" && dbUser.profileId) {
                try {
-                  const userProfile = await db.query.profiles.findFirst({
+                  const userProfile = await db.query.profile.findFirst({
                      where: eq(profile.id, dbUser.profileId),
                   });
 
@@ -53,9 +53,11 @@ const createTRPCContext = async (opts: { req: Request }): Promise<Context> => {
       }
    }
 
-   const organization = await db.query.organizations.findFirst({
+   const currentOrganization = await db.query.organization.findFirst({
       where: eq(organization.id, userAux?.organizationId ?? ""),
    });
+
+   if (!currentOrganization) throw new Error("Organization not found");
 
    return {
       headers: opts.req.headers,
@@ -63,7 +65,7 @@ const createTRPCContext = async (opts: { req: Request }): Promise<Context> => {
       auth: authClient,
       session,
       user: userAux,
-      organization,
+      organization: currentOrganization,
       hasPermission: (
          resource: string,
          action: "create" | "read" | "update" | "delete",

@@ -12,6 +12,7 @@ import { signOut, useSession } from "@/lib/auth-client";
 import { usePermissions } from "@/lib/route-protection";
 import { useNavigate } from "@tanstack/react-router";
 import { Bell, Building, LogOut, Menu, Shield, User, Users } from "lucide-react";
+import { ThemeToggler } from "../ui/theme-provider";
 
 interface HeaderProps {
    onMenuClick?: () => void;
@@ -81,6 +82,7 @@ export function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
                </Badge>
             </div>
 
+            <ThemeToggler />
             {/* Notifications */}
             <Button variant="ghost" size="sm" className="relative">
                <Bell className="h-5 w-5" />

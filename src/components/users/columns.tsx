@@ -12,29 +12,11 @@ import {
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getRoleBadgeVariant, getRoleDisplayName } from "@/lib/utils";
+import type { User } from "@/server/auth";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash2, UserCheck } from "lucide-react";
 
-// Extended user type based on our auth schema
-interface ExtendedUser {
-   id: string;
-   name: string;
-   email: string;
-   emailVerified: boolean;
-   image: string | null;
-   createdAt: Date;
-   updatedAt: Date;
-   role: string | null;
-   banned: boolean | null;
-   banReason: string | null;
-   banExpires: Date | null;
-   organizationId: string | null;
-   unitId: string | null;
-   systemRole: "super_admin" | "admin" | "user" | null;
-   profileId: string | null;
-}
-
-export const columns: ColumnDef<ExtendedUser>[] = [
+export const columns: ColumnDef<User>[] = [
    {
       id: "select",
       header: ({ table }) => (

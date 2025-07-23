@@ -29,7 +29,7 @@ export const organizationRouter = createTRPCRouter({
    }),
 
    getActiveOrganization: protectedProcedure.query(async ({ ctx }) => {
-      console.log(ctx);
+      console.log("====================> getActiveOrganization", ctx);
       const currentOrganization = await ctx.db.query.organization.findFirst({
          where: eq(organization.id, ctx.user.organizationId ?? ""),
       });

@@ -2,7 +2,7 @@
 
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { TRPCRouter } from "@/server/routers";
-import appCss from "@/styles.css?url";
+import "@/styles.css";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
@@ -26,12 +26,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
          },
          {
             title: "TanStack Start Starter",
-         },
-      ],
-      links: [
-         {
-            rel: "stylesheet",
-            href: appCss,
          },
       ],
    }),

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { ProfileFormSchema, type ProfileFormData } from "@/lib/form-schemas";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/constants";
+import { ProfileFormSchema, type ProfileFormData } from "@/lib/schemas";
 import { groupPermissionsByResource } from "@/lib/utils";
 import { useTRPC } from "@/server/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,7 +41,7 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
    const { id: organizationId } = useParams({ from: "/organizations/$id/profiles/" });
    const { data: organization } = useQuery(trpc.organization.getActiveOrganization.queryOptions());
 
-   const isRootOrganization = !organization?.metadata?.parentId;
+   const isRootOrganization = !organization?.parentId;
 
    // State for the selected scope that will be applied to all permissions
    const [selectedScope, setSelectedScope] = useState<"organization" | "unit" | "self">("unit");
