@@ -203,7 +203,6 @@ export const userRouter = createTRPCRouter({
       }),
 
    create: protectedProcedure.input(UserFormSchema).mutation(async ({ ctx, input }) => {
-      // Check permissions - only admin and super_admin can create users
       if (ctx.user?.systemRole !== "admin" && ctx.user?.systemRole !== "super_admin") {
          throw new TRPCError({
             code: "FORBIDDEN",
@@ -211,7 +210,6 @@ export const userRouter = createTRPCRouter({
          });
       }
 
-      // Admin can only create users in their organization
       if (ctx.user?.systemRole === "admin" && ctx.user.organizationId !== input.organizationId) {
          throw new TRPCError({
             code: "FORBIDDEN",
@@ -229,6 +227,7 @@ export const userRouter = createTRPCRouter({
                organizationId: input.organizationId,
                unitId: input.unitId,
                systemRole: input.systemRole || "user",
+               profileId: input.profileId || undefined,
             },
          });
 

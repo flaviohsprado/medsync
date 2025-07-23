@@ -1,6 +1,6 @@
 import { OrganizationFormSchema } from "@/lib/schemas";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import z from "zod";
 import { organization } from "../db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
@@ -26,6 +26,12 @@ export const organizationRouter = createTRPCRouter({
       }
 
       return org;
+   }),
+
+   getOrganizations: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      return await ctx.db.query.organization.findMany({
+         where: or(eq(organization.id, input.id), eq(organization.parentId, input.id)),
+      });
    }),
 
    getChildrenOrganizations: adminProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
