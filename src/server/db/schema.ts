@@ -58,7 +58,6 @@ export const unit = pgTable(
          .$defaultFn(() => crypto.randomUUID()),
       name: text("name").notNull(),
       phone: text("phone"),
-      email: text("email"),
       manager: text("manager"),
       specialties: text("specialties"),
       address: jsonb("address").$type<AddressFormData>().notNull(),

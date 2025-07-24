@@ -1,13 +1,13 @@
 import type { LinkOptions } from "@tanstack/react-router";
 import type { Auth, Session, User } from "./server/auth";
 import type { Db } from "./server/db";
-import type { appointment, organization, profile, unit, user } from "./server/db/schema";
+import type { organization, profile, unit, user } from "./server/db/schema";
 
 export type UserDB = typeof user.$inferSelect;
 export type Organization = typeof organization.$inferSelect;
 export type Unit = typeof unit.$inferSelect;
 export type Profile = typeof profile.$inferSelect;
-export type Appointment = typeof appointment.$inferSelect;
+// export type Appointment = typeof appointment.$inferSelect;
 
 export type Context = {
    headers: Headers;
@@ -65,4 +65,58 @@ export interface NavItem {
    resource: string;
    action: "create" | "read" | "update" | "delete";
    systemRoles?: SystemRole[];
+}
+
+export type AppointmentStatus = "scheduled" | "confirmed" | "completed" | "cancelled";
+
+export interface Appointment {
+   id: string;
+   patientId: string;
+   doctorId: string;
+   dateTime: Date;
+   duration: number; // minutes
+   status: AppointmentStatus;
+   notes?: string;
+   createdBy: string;
+   createdAt: Date;
+   updatedAt: Date;
+}
+
+export interface AppointmentWithDetails extends Appointment {
+   patientName: string;
+   doctorName: string;
+   doctorSpecialty: string;
+}
+
+export interface Patient {
+   id: string;
+   name: string;
+   email: string;
+   phone: string;
+   dateOfBirth: Date;
+   gender: "male" | "female" | "other" | "prefer-not-to-say";
+   cpf: string; // Brazilian ID format: XXX.XXX.XXX-XX
+   address?: string;
+   emergencyContact?: string;
+   createdAt: Date;
+   updatedAt: Date;
+}
+
+export interface OfficeHours {
+   dayOfWeek: number; // 0-6 (Sunday-Saturday)
+   startTime: string; // "09:00"
+   endTime: string; // "17:00"
+   isActive: boolean;
+}
+
+export interface Doctor {
+   id: string;
+   name: string;
+   email: string;
+   phone: string;
+   specialty: string;
+   crm: string; // Medical license
+   officeHours: OfficeHours[];
+   createdAt: Date;
+   updatedAt: Date;
 }

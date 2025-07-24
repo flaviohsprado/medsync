@@ -64,15 +64,7 @@ function RouteComponent() {
                            Adicione um novo usuário ao sistema com função e permissões específicas
                         </DialogDescription>
                      </DialogHeader>
-                     <UserForm
-                        onOpenChange={setIsOpen}
-                        organizationId={organizationId}
-                        onSuccess={() => {
-                           queryClient.invalidateQueries({
-                              queryKey: trpc.user.getAll.queryOptions({ organizationId }).queryKey,
-                           });
-                        }}
-                     />
+                     <UserForm onOpenChange={setIsOpen} organizationId={organizationId} />
                   </DialogContent>
                </Dialog>
             </div>
@@ -86,7 +78,12 @@ function RouteComponent() {
                </div>
             </div>
          ) : (
-            <DataTable columns={userColumns} data={users} searchPlaceholder="Buscar usuários..." searchColumn="name" />
+            <DataTable
+               columns={userColumns}
+               data={users}
+               searchPlaceholder="Buscar usuários..."
+               searchColumn="name"
+            />
          )}
       </div>
    );

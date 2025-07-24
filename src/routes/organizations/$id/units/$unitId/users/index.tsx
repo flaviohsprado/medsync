@@ -26,7 +26,11 @@ function RouteComponent() {
    const { id: organizationId = "", unitId } = useParams({ strict: false });
    const [isOpen, setIsOpen] = useState(false);
 
-   const { data: users = [], isLoading, error } = useQuery(trpc.user.getAll.queryOptions({ organizationId, unitId }));
+   const {
+      data: users = [],
+      isLoading,
+      error,
+   } = useQuery(trpc.user.getAll.queryOptions({ organizationId, unitId }));
 
    if (error) {
       return (
@@ -63,16 +67,7 @@ function RouteComponent() {
                            Adicione um novo usuário ao sistema com função e permissões específicas
                         </DialogDescription>
                      </DialogHeader>
-                     <UserForm
-                        organizationId={organizationId}
-                        unitId={unitId}
-                        onOpenChange={setIsOpen}
-                        onSuccess={() => {
-                           queryClient.invalidateQueries({
-                              queryKey: trpc.user.getAll.queryOptions({ organizationId }).queryKey,
-                           });
-                        }}
-                     />
+                     <UserForm organizationId={organizationId} unitId={unitId} onOpenChange={setIsOpen} />
                   </DialogContent>
                </Dialog>
             </div>
@@ -86,7 +81,12 @@ function RouteComponent() {
                </div>
             </div>
          ) : (
-            <DataTable columns={userColumns} data={users} searchPlaceholder="Buscar usuários..." searchColumn="name" />
+            <DataTable
+               columns={userColumns}
+               data={users}
+               searchPlaceholder="Buscar usuários..."
+               searchColumn="name"
+            />
          )}
       </div>
    );

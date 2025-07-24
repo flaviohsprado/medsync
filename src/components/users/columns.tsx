@@ -16,7 +16,7 @@ import type { User } from "@/server/auth";
 import { useTRPC } from "@/server/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Edit, MoreHorizontal, Trash2, UserCheck } from "lucide-react";
+import { ArrowUpDown, Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -30,6 +30,15 @@ import {
    AlertDialogTitle,
    AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import {
+   Dialog,
+   DialogContent,
+   DialogDescription,
+   DialogHeader,
+   DialogTitle,
+   DialogTrigger,
+} from "../ui/dialog";
+import { UserForm } from "./Form";
 
 type UserWithRelations = User & {
    organization?: { name: string };
@@ -39,7 +48,9 @@ export const userColumns: ColumnDef<UserWithRelations>[] = [
       id: "select",
       header: ({ table }) => (
          <Checkbox
-            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+            checked={
+               table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
             onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
          />
@@ -104,7 +115,9 @@ export const userColumns: ColumnDef<UserWithRelations>[] = [
       header: "Email Verificado",
       cell: ({ row }) => {
          const verified = row.getValue("emailVerified") as boolean;
-         return <Badge variant={verified ? "default" : "secondary"}>{verified ? "Verificado" : "Pendente"}</Badge>;
+         return (
+            <Badge variant={verified ? "default" : "secondary"}>{verified ? "Verificado" : "Pendente"}</Badge>
+         );
       },
    },
    {
@@ -152,7 +165,8 @@ export const userColumns: ColumnDef<UserWithRelations>[] = [
             }),
          );
 
-         const [isOpen, setIsOpen] = useState(false);
+         const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+         const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 
          return (
             <DropdownMenu>
@@ -164,25 +178,48 @@ export const userColumns: ColumnDef<UserWithRelations>[] = [
                </DropdownMenuTrigger>
                <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>Copiar ID</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                     <Edit className="mr-2 h-4 w-4" />
-                     Editar usuário
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                     <UserCheck className="mr-2 h-4 w-4" />
-                     Alterar função
+                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
+                     Copiar ID
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+                  <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
+                     <DialogTrigger asChild>
+                        <DropdownMenuItem
+                           onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsUpdateOpen(true);
+                           }}
+                        >
+                           <Edit className="mr-2 h-4 w-4" />
+                           Editar usuário
+                        </DropdownMenuItem>
+                     </DialogTrigger>
+                     <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                           <DialogTitle>Edtar Usuário</DialogTitle>
+                           <DialogDescription>
+                              Edite as informações do usuário, incluindo nome, email, função e permissões
+                           </DialogDescription>
+                        </DialogHeader>
+                        <UserForm
+                           userId={user.id}
+                           organizationId={user.organizationId}
+                           unitId={user.unitId ?? undefined}
+                           onOpenChange={setIsUpdateOpen}
+                        />
+                     </DialogContent>
+                  </Dialog>
+
+                  <DropdownMenuSeparator />
+                  <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
                      <AlertDialogTrigger asChild>
                         <DropdownMenuItem
                            className="text-destructive"
                            onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              setIsOpen(true);
+                              setIsDeleteOpen(true);
                            }}
                         >
                            <Trash2 size={8} color="red" />
@@ -197,7 +234,9 @@ export const userColumns: ColumnDef<UserWithRelations>[] = [
                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+                              Cancelar
+                           </AlertDialogCancel>
                            <AlertDialogAction
                               onClick={(e) => {
                                  e.stopPropagation();

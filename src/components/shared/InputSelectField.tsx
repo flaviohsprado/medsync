@@ -29,7 +29,10 @@ export function InputSelectField({ form, placeholder, name, label, options }: In
                            <Button
                               variant="outline"
                               role="combobox"
-                              className={cn("w-[200px] justify-between", !field.value && "text-muted-foreground")}
+                              className={cn(
+                                 "w-full justify-between",
+                                 !field.value && "text-muted-foreground",
+                              )}
                            >
                               {field.value
                                  ? options.find((option) => option.value === field.value)?.label
@@ -38,7 +41,7 @@ export function InputSelectField({ form, placeholder, name, label, options }: In
                            </Button>
                         </FormControl>
                      </PopoverTrigger>
-                     <PopoverContent className="w-[200px] p-0">
+                     <PopoverContent className="w-full p-0">
                         <Command>
                            <CommandInput placeholder={placeholder || "Pesquisar..."} className="h-9" />
                            <CommandList>

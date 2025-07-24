@@ -56,7 +56,6 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
       resolver: zodResolver(UnitFormSchema),
       defaultValues: {
          name: "",
-         email: "",
          phone: "",
          manager: "",
          specialties: "",
@@ -75,7 +74,6 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
    const onSubmit = async (data: UnitFormData) => {
       createUnit({
          name: data.name,
-         email: data.email ?? "",
          phone: data.phone,
          manager: data.manager ?? "",
          specialties: data.specialties ?? "",
@@ -98,7 +96,7 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
 
    const handleNext = async (methods: any) => {
       if (!methods.isLast) {
-         const fieldsToValidate = ["name", "email", "phone", "manager", "specialties"] as const;
+         const fieldsToValidate = ["name", "phone", "manager", "specialties"] as const;
 
          const isValid = await form.trigger(fieldsToValidate);
 
@@ -136,7 +134,12 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
 
                      <Stepper.Controls>
                         {!methods.isFirst && (
-                           <Button type="button" variant="secondary" onClick={methods.prev} disabled={isPending}>
+                           <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={methods.prev}
+                              disabled={isPending}
+                           >
                               Anterior
                            </Button>
                         )}

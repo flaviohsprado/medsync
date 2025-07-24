@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 const statement = {
    organization: ["create", "read", "update", "delete"],
    unit: ["create", "read", "update", "delete"],
-   user: ["read", "create", "update", "delete"],
+   user: ["read", "create", "update", "delete", "impersonate"],
    appointment: ["read", "create", "update", "delete"],
    patient: ["read", "create", "update", "delete"],
    medical_record: ["read", "create", "update", "delete"],
@@ -30,7 +30,7 @@ export const super_admin = ac.newRole({
    ...adminAc.statements,
    organization: ["create", "read", "update", "delete"],
    unit: ["create", "read", "update", "delete"],
-   user: ["read", "create", "update", "delete"],
+   user: ["read", "create", "update", "delete", "impersonate"],
    appointment: ["read", "create", "update", "delete"],
    patient: ["read", "create", "update", "delete"],
    medical_record: ["read", "create", "update", "delete"],
@@ -45,7 +45,7 @@ export const super_admin = ac.newRole({
 export const admin = ac.newRole({
    organization: ["read", "update"], // Can only read/update their own org
    unit: ["create", "read", "update", "delete"], // Full access to units in their org
-   user: ["read", "create", "update", "delete"], // Manage users in their org
+   user: ["read", "create", "update", "delete", "impersonate"], // Manage users in their org, can impersonate
    appointment: ["read", "create", "update", "delete"],
    patient: ["read", "create", "update", "delete"],
    medical_record: ["read", "create", "update", "delete"],
@@ -300,7 +300,8 @@ export function hasBasicPermission(
 
    return userPermissions.some(
       (permission) =>
-         (permission.resource === resource || permission.resource === "*") && permission.actions.includes(action),
+         (permission.resource === resource || permission.resource === "*") &&
+         permission.actions.includes(action),
    );
 }
 

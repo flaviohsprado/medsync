@@ -35,12 +35,18 @@ export const profileRouter = createTRPCRouter({
 
       // Admin can only see profiles in their organization
       if (ctx.user?.systemRole === "admin") {
-         return await ctx.db.query.profile.findMany({
-            where: and(
-               eq(profile.organizationId, ctx.user.organizationId),
-               eq(profile.unitId, ctx.user.unitId!),
-            ),
-         });
+         if (ctx.user.unitId) {
+            return await ctx.db.query.profile.findMany({
+               where: and(
+                  eq(profile.organizationId, ctx.user.organizationId),
+                  eq(profile.unitId, ctx.user.unitId!),
+               ),
+            });
+         } else {
+            return await ctx.db.query.profile.findMany({
+               where: eq(profile.organizationId, ctx.user.organizationId),
+            });
+         }
       }
 
       // Regular users cannot see profiles
@@ -67,9 +73,9 @@ export const profileRouter = createTRPCRouter({
          });
       }
 
-      const [newProfile] = await ctx.db.insert(profile).values(input).returning();
+      console.log("Creating profile with input:", input);
 
-      return newProfile;
+      await ctx.db.insert(profile).values(input).execute();
    }),
 
    update: protectedProcedure

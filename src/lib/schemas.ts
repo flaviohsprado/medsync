@@ -31,9 +31,8 @@ export type OrganizationFormData = z.infer<typeof OrganizationFormSchema>;
 export const UnitFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),
    phone: z.string().min(1, "Telefone é obrigatório"),
-   email: z.string().email("Email inválido").optional().or(z.literal("")),
    manager: z.string().min(1, "Responsável é obrigatório").optional().or(z.literal("")),
-   specialties: z.string().min(1, "Especialidades são obrigatórias"),
+   specialties: z.string().min(1, "Especialidades são obrigatórias").optional().or(z.literal("")),
    address: AddressFormSchema,
    organizationId: z.string(),
 });

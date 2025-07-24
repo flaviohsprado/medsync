@@ -40,11 +40,10 @@ interface UserFormProps {
    organizationId: string;
    userId?: string;
    onOpenChange?: (open: boolean) => void;
-   onSuccess?: () => void;
    unitId?: string;
 }
 
-export function UserForm({ userId, onOpenChange, onSuccess, organizationId, unitId }: UserFormProps) {
+export function UserForm({ userId, onOpenChange, organizationId, unitId }: UserFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { id: routeOrgId } = useParams({ strict: false });
@@ -70,7 +69,6 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId, unit
          onSuccess: () => {
             toast.success("Usuário criado com sucesso");
             queryClient.invalidateQueries({ queryKey: trpc.user.getAll.queryOptions({}).queryKey });
-            onSuccess?.();
             onOpenChange?.(false);
          },
          onError: (error) => {
@@ -85,9 +83,10 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId, unit
             toast.success("Usuário atualizado com sucesso");
             queryClient.invalidateQueries({ queryKey: trpc.user.getAll.queryOptions({}).queryKey });
             if (userId) {
-               queryClient.invalidateQueries({ queryKey: trpc.user.getById.queryOptions({ id: userId }).queryKey });
+               queryClient.invalidateQueries({
+                  queryKey: trpc.user.getById.queryOptions({ id: userId }).queryKey,
+               });
             }
-            onSuccess?.();
             onOpenChange?.(false);
          },
          onError: (error) => {
@@ -164,9 +163,11 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId, unit
       if (!methods.isLast) {
          // Validate only fields for current step
          if (methods.current.id === UserFormStep.BASIC) {
-            const fields: Array<keyof UserFormData> = ["name", "email", ...(userId ? [] : ["password"])] as Array<
-               keyof UserFormData
-            >;
+            const fields: Array<keyof UserFormData> = [
+               "name",
+               "email",
+               ...(userId ? [] : ["password"]),
+            ] as Array<keyof UserFormData>;
             const isValid = await form.trigger(fields);
             if (isValid) methods.next();
          } else if (methods.current.id === UserFormStep.ORG_UNIT) {
