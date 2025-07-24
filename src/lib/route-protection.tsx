@@ -1,44 +1,30 @@
 import { useSession } from "@/lib/auth-client";
 import { canAccessRoute, hasPermission, hasRequiredRole } from "@/lib/permissions";
-import type { User } from "@/server/auth";
 import { useTRPC } from "@/server/react";
 import type { RoutePermission, SystemRole } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import type React from "react";
 
-// Helper function to convert session user to ExtendedUser
-function toExtendedUser(user: any): User | null {
-   if (!user) return null;
-
-   return {
-      ...user,
-      systemRole: (user as any).systemRole || "user",
-      organizationId: (user as any).organizationId,
-      unitId: (user as any).unitId,
-      profileId: (user as any).profileId,
-   } as User;
-}
-
-// Higher-order component for route protection
 export function withPermission<T extends Record<string, any>>(
    Component: React.ComponentType<T>,
    requiredPermission: RoutePermission,
 ) {
    return function ProtectedComponent(props: T) {
+      const trpc = useTRPC();
       const { data: session } = useSession();
-      const extendedUser = toExtendedUser(session?.user);
+      const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-      if (!extendedUser) {
+      if (!user) {
          return <UnauthorizedComponent message="Please log in to access this page" />;
       }
 
       // Check role requirement
-      if (requiredPermission.requiredRole && !hasRequiredRole(extendedUser, requiredPermission.requiredRole)) {
+      if (requiredPermission.requiredRole && !hasRequiredRole(user, requiredPermission.requiredRole)) {
          return <UnauthorizedComponent message="Insufficient role permissions" />;
       }
 
       // Check resource permission
-      const permissionCheck = hasPermission(extendedUser, requiredPermission.resource, requiredPermission.action);
+      const permissionCheck = hasPermission(user, requiredPermission.resource, requiredPermission.action);
       if (!permissionCheck.allowed) {
          return <UnauthorizedComponent message={permissionCheck.reason || "Access denied"} />;
       }
@@ -48,16 +34,20 @@ export function withPermission<T extends Record<string, any>>(
 }
 
 // HOC for role-based protection
-export function withRole<T extends Record<string, any>>(Component: React.ComponentType<T>, requiredRole: SystemRole) {
+export function withRole<T extends Record<string, any>>(
+   Component: React.ComponentType<T>,
+   requiredRole: SystemRole,
+) {
    return function RoleProtectedComponent(props: T) {
+      const trpc = useTRPC();
       const { data: session } = useSession();
-      const extendedUser = toExtendedUser(session?.user);
+      const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-      if (!extendedUser) {
+      if (!user) {
          return <UnauthorizedComponent message="Please log in to access this page" />;
       }
 
-      if (!hasRequiredRole(extendedUser, requiredRole)) {
+      if (!hasRequiredRole(user, requiredRole)) {
          return <UnauthorizedComponent message="Insufficient role permissions" />;
       }
 
@@ -68,15 +58,18 @@ export function withRole<T extends Record<string, any>>(Component: React.Compone
 // HOC for organization-scoped protection
 export function withOrganization<T extends Record<string, any>>(Component: React.ComponentType<T>) {
    return function OrganizationProtectedComponent(props: T) {
+      const trpc = useTRPC();
       const { data: session } = useSession();
-      const extendedUser = toExtendedUser(session?.user);
+      const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-      if (!extendedUser) {
+      if (!user) {
          return <UnauthorizedComponent message="Please log in to access this page" />;
       }
 
-      if (!extendedUser.organizationId && extendedUser.systemRole !== "super_admin") {
-         return <UnauthorizedComponent message="No organization assigned. Please contact your administrator." />;
+      if (user.systemRole !== "super_admin") {
+         return (
+            <UnauthorizedComponent message="No organization assigned. Please contact your administrator." />
+         );
       }
 
       return <Component {...props} />;
@@ -97,20 +90,21 @@ export function PermissionGate({
    fallback?: React.ReactNode;
    requireRole?: SystemRole;
 }) {
+   const trpc = useTRPC();
    const { data: session } = useSession();
-   const extendedUser = toExtendedUser(session?.user);
+   const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-   if (!extendedUser) {
+   if (!user) {
       return fallback || null;
    }
 
    // Check role requirement
-   if (requireRole && !hasRequiredRole(extendedUser, requireRole)) {
+   if (requireRole && !hasRequiredRole(user, requireRole)) {
       return fallback || null;
    }
 
    // Check resource permission
-   const permissionCheck = hasPermission(extendedUser, resource, action);
+   const permissionCheck = hasPermission(user, resource, action);
    if (!permissionCheck.allowed) {
       return fallback || null;
    }
@@ -128,15 +122,16 @@ export function RoleGate({
    role: SystemRole | SystemRole[];
    fallback?: React.ReactNode;
 }) {
+   const trpc = useTRPC();
    const { data: session } = useSession();
-   const extendedUser = toExtendedUser(session?.user);
+   const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-   if (!extendedUser) {
+   if (!user) {
       return fallback || null;
    }
 
    const requiredRoles = Array.isArray(role) ? role : [role];
-   const hasRequiredRoleAccess = requiredRoles.some((r) => hasRequiredRole(extendedUser, r));
+   const hasRequiredRoleAccess = requiredRoles.some((r) => hasRequiredRole(user, r));
 
    if (!hasRequiredRoleAccess) {
       return fallback || null;
@@ -167,34 +162,30 @@ function UnauthorizedComponent({ message }: { message: string }) {
 
 // Hook for checking permissions
 export function usePermissions() {
-   const { data: session } = useSession();
-   const extendedUser = toExtendedUser(session?.user);
    const trpc = useTRPC();
+   const { data: session } = useSession();
+   const { data: user } = useQuery(trpc.user.getById.queryOptions({ id: session?.user?.id! }));
 
-   // Fetch user permissions from server
-   const { data: userPermissions } = useQuery({
-      ...trpc.user.getPermissions.queryOptions(),
-      enabled: !!extendedUser,
-   });
+   const permissions = user?.profile?.permissions || [];
 
    return {
-      user: extendedUser,
-      permissions: userPermissions || [],
+      user,
+      permissions,
       hasPermission: (resource: string, action: "create" | "read" | "update" | "delete") => {
-         if (!extendedUser) return { allowed: false, reason: "Not authenticated" };
-         return hasPermission(extendedUser, resource, action, undefined, undefined, userPermissions);
+         if (!user) return { allowed: false, reason: "Not authenticated" };
+         return hasPermission(user, resource, action, undefined, undefined, permissions);
       },
       hasRole: (role: SystemRole) => {
-         if (!extendedUser) return false;
-         return hasRequiredRole(extendedUser, role);
+         if (!user) return false;
+         return hasRequiredRole(user, role);
       },
       canAccessRoute: (route: string) => {
-         if (!extendedUser) return false;
-         return canAccessRoute(extendedUser, route);
+         if (!user) return false;
+         return canAccessRoute(user, route);
       },
-      isSuperAdmin: extendedUser?.systemRole === "super_admin",
-      isAdmin: extendedUser?.systemRole === "admin",
-      isUser: extendedUser?.systemRole === "user",
+      isSuperAdmin: user?.systemRole === "super_admin",
+      isAdmin: user?.systemRole === "admin",
+      isUser: user?.systemRole === "user",
    };
 }
 

@@ -1,8 +1,9 @@
 import type { LinkOptions } from "@tanstack/react-router";
 import type { Auth, Session, User } from "./server/auth";
 import type { Db } from "./server/db";
-import type { appointment, organization, profile, unit } from "./server/db/schema";
+import type { appointment, organization, profile, unit, user } from "./server/db/schema";
 
+export type UserDB = typeof user.$inferSelect;
 export type Organization = typeof organization.$inferSelect;
 export type Unit = typeof unit.$inferSelect;
 export type Profile = typeof profile.$inferSelect;

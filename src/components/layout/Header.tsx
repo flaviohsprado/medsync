@@ -33,9 +33,7 @@ export function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
       if (isSuperAdmin) return "Super Admin";
       if (isAdmin) return "Administrador";
       if (isUser) {
-         const profile = user?.profileId;
-         // For now, just show the profile name or "Usuário" if no profile
-         // In a real implementation, you could fetch the profile name from the database
+         const profile = user?.profile?.name;
          if (profile) return `Usuário (${profile})`;
          return "Usuário";
       }
@@ -117,7 +115,7 @@ export function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
                      </div>
                      <div className="text-xs text-muted-foreground font-normal mt-1">
                         {getRoleDisplayName()}
-                        {user?.organizationId && <div className="mt-1">Org: {user.organizationId.slice(0, 8)}...</div>}
+                        <div className="mt-1">Org: {user?.organization.name.slice(0, 8)}...</div>
                      </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />

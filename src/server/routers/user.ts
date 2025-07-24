@@ -110,9 +110,16 @@ export const userRouter = createTRPCRouter({
          }),
       )
       .query(async ({ ctx, input }) => {
-         const [targetUser] = await ctx.db.select().from(user).where(eq(user.id, input.id));
+         const response = await ctx.db.query.user.findFirst({
+            where: eq(user.id, input.id),
+            with: {
+               organization: true,
+               unit: true,
+               profile: true,
+            },
+         });
 
-         if (!targetUser) {
+         if (!response) {
             throw new TRPCError({
                code: "NOT_FOUND",
                message: "User not found",
@@ -124,7 +131,7 @@ export const userRouter = createTRPCRouter({
             // Super admin can see any user
          } else if (ctx.user?.systemRole === "admin") {
             // Admin can only see users in their organization
-            if ((targetUser as any).organizationId !== ctx.user.organizationId) {
+            if (response.organizationId !== ctx.user.organizationId) {
                throw new TRPCError({
                   code: "FORBIDDEN",
                   message: "Cannot access user from different organization",
@@ -132,7 +139,7 @@ export const userRouter = createTRPCRouter({
             }
          } else {
             // Regular users can only see themselves
-            if (targetUser.id !== ctx.user?.id) {
+            if (response.id !== ctx.user?.id) {
                throw new TRPCError({
                   code: "FORBIDDEN",
                   message: "Cannot access other users",
@@ -140,7 +147,7 @@ export const userRouter = createTRPCRouter({
             }
          }
 
-         return targetUser;
+         return response;
       }),
 
    create: protectedProcedure.input(UserFormSchema).mutation(async ({ ctx, input }) => {
@@ -217,7 +224,11 @@ export const userRouter = createTRPCRouter({
             }
          }
 
-         const [updatedUser] = await ctx.db.update(user).set(input.data).where(eq(user.id, input.id)).returning();
+         const [updatedUser] = await ctx.db
+            .update(user)
+            .set(input.data)
+            .where(eq(user.id, input.id))
+            .returning();
 
          return updatedUser;
       }),

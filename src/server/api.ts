@@ -85,7 +85,14 @@ export const createTRPCContext = async (opts: { req: Request }): Promise<Context
          targetUnitId?: string,
       ) => {
          if (!userAux) return { allowed: false, reason: "User not authenticated" };
-         return hasPermission(userAux, resource, action, targetOrgId, targetUnitId, (userAux as any).permissions);
+         return hasPermission(
+            userAux,
+            resource,
+            action,
+            targetOrgId,
+            targetUnitId,
+            (userAux as any).permissions,
+         );
       },
       canAccessRoute: (route: string) => {
          if (!userAux) return false;
