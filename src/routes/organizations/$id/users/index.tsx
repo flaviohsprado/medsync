@@ -31,9 +31,8 @@ function RouteComponent() {
       isLoading,
       error,
    } = useQuery(
-      trpc.user.listAll.queryOptions({
-         limit: 100,
-         offset: 0,
+      trpc.user.getAll.queryOptions({
+         organizationId,
       }),
    );
 
@@ -77,9 +76,8 @@ function RouteComponent() {
                         onOpenChange={setIsOpen}
                         organizationId={organizationId}
                         onSuccess={() => {
-                           // Invalidate and refetch users
                            queryClient.invalidateQueries({
-                              queryKey: trpc.user.listAll.queryOptions({ limit: 100, offset: 0 }).queryKey,
+                              queryKey: trpc.user.getAll.queryOptions({ organizationId }).queryKey,
                            });
                         }}
                      />

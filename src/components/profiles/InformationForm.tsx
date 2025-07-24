@@ -27,7 +27,7 @@ export function ProfileInformationForm({ form, profileType, handleProfileTypeCha
             <Label htmlFor="profile-type-select" className="text-sm font-medium">
                Tipo de Perfil
             </Label>
-            <Select value={profileType} onValueChange={handleProfileTypeChange}>
+            <Select value={profileType} onValueChange={handleProfileTypeChange} defaultValue="user">
                <SelectTrigger id="profile-type-select">
                   <SelectValue placeholder="Selecione o tipo de perfil" />
                </SelectTrigger>

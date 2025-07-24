@@ -60,7 +60,7 @@ function RouteComponent() {
                      <DialogTitle>Criar Nova Organização</DialogTitle>
                      <DialogDescription>Adicione uma nova organização ao sistema</DialogDescription>
                   </DialogHeader>
-                  <OrganizationForm onOpenChange={setIsCreateOpen} />
+                  <OrganizationForm id={id} onOpenChange={setIsCreateOpen} />
                </DialogContent>
             </Dialog>
          </div>

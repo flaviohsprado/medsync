@@ -42,18 +42,9 @@ export const organizationRouter = createTRPCRouter({
          });
       }
 
-      const org = await ctx.db.query.organization.findMany({
+      return await ctx.db.query.organization.findMany({
          where: eq(organization.parentId, input.id),
       });
-
-      if (!org) {
-         throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Organization not found",
-         });
-      }
-
-      return org;
    }),
 
    getActiveOrganization: protectedProcedure.query(async ({ ctx }) => {

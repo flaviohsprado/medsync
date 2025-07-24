@@ -31,61 +31,6 @@ export const userRouter = createTRPCRouter({
       return [];
    }),
 
-   // Debug: Get profiles for user's organization
-   getOrganizationProfiles: protectedProcedure.query(async ({ ctx }) => {
-      if (!ctx.user) {
-         throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "User not authenticated",
-         });
-      }
-
-      if (!ctx.user.organizationId) {
-         return [];
-      }
-
-      try {
-         const orgProfiles = await ctx.db
-            .select()
-            .from(profile)
-            .where(eq(profile.organizationId, ctx.user.organizationId));
-         return orgProfiles;
-      } catch (error) {
-         console.error("Error fetching organization profiles:", error);
-         return [];
-      }
-   }),
-
-   // Assign profile to user (for debugging/fixing)
-   assignProfile: protectedProcedure
-      .input(
-         z.object({
-            userId: z.string(),
-            profileId: z.string(),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         // Check permissions
-         if (ctx.user?.systemRole !== "admin" && ctx.user?.systemRole !== "super_admin") {
-            throw new TRPCError({
-               code: "FORBIDDEN",
-               message: "Only admins can assign profiles",
-            });
-         }
-
-         // Update user with profile
-         const [updatedUser] = await ctx.db
-            .update(user)
-            .set({
-               profileId: input.profileId,
-               updatedAt: new Date(),
-            })
-            .where(eq(user.id, input.userId))
-            .returning();
-
-         return updatedUser;
-      }),
-
    listAll: protectedProcedure
       .input(
          z
@@ -217,6 +162,8 @@ export const userRouter = createTRPCRouter({
          });
       }
 
+      console.log("Creating user with input:", input);
+
       try {
          // Use Better Auth to create the user
          const newUser = await ctx.auth.api.signUpEmail({
@@ -329,7 +276,6 @@ export const userRouter = createTRPCRouter({
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         // Get existing user first
          const [existingUser] = await ctx.db.select().from(user).where(eq(user.id, input.id));
 
          if (!existingUser) {

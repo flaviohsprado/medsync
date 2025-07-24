@@ -1,3 +1,4 @@
+import type { LinkOptions } from "@tanstack/react-router";
 import type { Auth, Session, User } from "./server/auth";
 import type { Db } from "./server/db";
 import type { appointment, organization, profile, unit } from "./server/db/schema";
@@ -55,3 +56,12 @@ export const PermissionErrors = {
 } as const;
 
 export type PermissionError = (typeof PermissionErrors)[keyof typeof PermissionErrors];
+
+export interface NavItem {
+   to: LinkOptions["to"];
+   label: string;
+   icon: React.ComponentType<{ className?: string }>;
+   resource: string;
+   action: "create" | "read" | "update" | "delete";
+   systemRoles?: SystemRole[];
+}

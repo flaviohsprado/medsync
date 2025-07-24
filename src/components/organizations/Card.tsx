@@ -38,7 +38,7 @@ export function OrganizationCard({ organization }: OrganizationCardProps) {
                <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Email: {organization.email || "N/A"}</p>
                   <p className="text-sm text-muted-foreground">Telefone: {organization.phone || "N/A"}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-wrap break-words line-clamp-2">
                      Endereço: {organization.address.street || "N/A"}, {organization.address.number || "N/A"} -{" "}
                      {organization.address.neighborhood || "N/A"} - {organization.address.city || "N/A"} -{" "}
                      {organization.address.state || "N/A"}

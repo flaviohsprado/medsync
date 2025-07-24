@@ -28,14 +28,28 @@ const { Stepper } = defineStepper(
 );
 
 interface OrganizationFormProps {
+   id: string;
    onOpenChange: (open: boolean) => void;
 }
 
-export function OrganizationForm({ onOpenChange }: OrganizationFormProps) {
+export function OrganizationForm({ id, onOpenChange }: OrganizationFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
-   const { mutate: createOrganization, isPending } = useMutation(trpc.organization.create.mutationOptions());
+   const { mutate: createOrganization, isPending } = useMutation(
+      trpc.organization.create.mutationOptions({
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.organization.getChildrenOrganizations.queryOptions({ id }).queryKey,
+            });
+            toast.success("Organização criada com sucesso");
+            onOpenChange(false);
+         },
+         onError: (error) => {
+            toast.error(`Erro ao criar organização: ${error.message}`);
+         },
+      }),
+   );
 
    const form = useForm<OrganizationFormData>({
       resolver: zodResolver(OrganizationFormSchema),
@@ -53,6 +67,7 @@ export function OrganizationForm({ onOpenChange }: OrganizationFormProps) {
             state: "",
             zipCode: "",
          },
+         parentId: id,
       },
    });
 
@@ -72,6 +87,7 @@ export function OrganizationForm({ onOpenChange }: OrganizationFormProps) {
             state: data.address.state,
             zipCode: data.address.zipCode,
          },
+         parentId: id,
       });
 
       queryClient.invalidateQueries({

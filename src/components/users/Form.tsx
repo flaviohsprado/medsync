@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { UserFormSchema, type UserFormData } from "@/lib/schemas";
 import { useTRPC } from "@/server/react";
+import type { SystemRole } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
@@ -133,7 +134,18 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId }: Us
       }
    }, [existingUser, form, currentOrgId]);
 
+   const getProfileSystemRole = (profileId: string | undefined): SystemRole => {
+      const profile = profiles.find((p) => p.id === profileId);
+
+      console.log("getProfileSystemRole called with profileId:", profileId);
+      console.log("Available profiles:", profiles);
+
+      return profile ? (profile.systemRole as SystemRole) : "user";
+   };
+
    const onSubmit = (data: UserFormData) => {
+      const systemRole = getProfileSystemRole(data.profileId);
+
       if (userId) {
          updateUser({
             id: userId,
@@ -142,7 +154,7 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId }: Us
                email: data.email,
                organizationId: data.organizationId,
                unitId: data.unitId || undefined,
-               systemRole: data.systemRole,
+               systemRole,
                profileId: data.profileId || undefined,
             },
          });
@@ -153,7 +165,7 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId }: Us
             password: data.password!,
             organizationId: data.organizationId,
             unitId: data.unitId!,
-            systemRole: data.systemRole,
+            systemRole,
             profileId: data.profileId || undefined,
          });
       }

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { ALL_NAVIGATION_ITEMS } from "@/constants";
 import { useSession } from "@/lib/auth-client";
-import { ALL_NAVIGATION_ITEMS } from "@/lib/navigation-config";
 import { usePermissions } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/server/react";
@@ -8,6 +8,7 @@ import type { SystemRole } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import { useCallback, useMemo } from "react";
 
 interface SidebarProps {
    isOpen: boolean;
@@ -20,7 +21,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
    const params = useParams({ strict: false });
    const { data: session } = useSession();
 
-   const { user, hasPermission, hasRole } = usePermissions();
+   const { user, hasPermission } = usePermissions();
 
    const { data: organization } = useQuery(
       trpc.organization.getActiveOrganization.queryOptions(undefined, {
@@ -28,41 +29,35 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       }),
    );
 
-   // Filter navigation items based on the user's permissions
-   const filteredItems = ALL_NAVIGATION_ITEMS.filter((item) => {
-      if (!user) return false;
+   const filteredItems = useMemo(() => {
+      if (!user) return [];
+      return ALL_NAVIGATION_ITEMS.filter((item) => {
+         if (item.systemRoles && !item.systemRoles.includes(user.systemRole as SystemRole)) {
+            return false;
+         }
 
-      console.log("user", user);
+         const permissionCheck = hasPermission(item.resource, item.action);
+         if (!permissionCheck.allowed) {
+            return false;
+         }
+         return true;
+      });
+   }, [user, hasPermission]);
 
-      // 1. Check if the user's system role is allowed to see the item
-      if (item.systemRoles && !item.systemRoles.includes(user.systemRole as SystemRole)) {
-         return false;
-      }
-
-      // 2. Check if the user has the specific permission for the item's resource and action
-      const permissionCheck = hasPermission(item.resource, item.action);
-      if (!permissionCheck.allowed) {
-         return false;
-      }
-
-      return true;
-   });
-   console.log(filteredItems);
-
-   const isActiveRoute = (path: string) => {
-      const { pathname } = routerState.location;
-
-      // Replace placeholders like $id with actual values from URL params
-      let processedPath = path;
-      if ("id" in params && params.id) {
-         processedPath = processedPath.replace("$id", params.id);
-      }
-      if ("unitId" in params && params.unitId) {
-         processedPath = processedPath.replace("$unitId", params.unitId);
-      }
-
-      return pathname === processedPath;
-   };
+   const isActiveRoute = useCallback(
+      (path: string) => {
+         const { pathname } = routerState.location;
+         let processedPath = path;
+         if ("id" in params && params.id) {
+            processedPath = processedPath.replace("$id", params.id);
+         }
+         if ("unitId" in params && params.unitId) {
+            processedPath = processedPath.replace("$unitId", params.unitId);
+         }
+         return pathname === processedPath;
+      },
+      [routerState.location, params],
+   );
 
    return (
       <>
@@ -87,7 +82,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                </div>
 
                {/* Navigation */}
-               <nav className="flex-1 p-4">
+               <nav className="flex-1 p-4 overflow-y-auto">
                   <ul className="space-y-2">
                      {filteredItems.map((item) => {
                         const isActive = isActiveRoute(item.to!);

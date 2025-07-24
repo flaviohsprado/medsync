@@ -8,11 +8,11 @@ interface LoaderProps extends React.HTMLAttributes<HTMLDivElement> {
    text?: string;
 }
 
-const LoaderComponent = ({ size = 24, className, variant = "default", text, ...props }: LoaderProps) => {
+const LoaderComponent = ({ size = 48, className, variant = "default", text, ...props }: LoaderProps) => {
    return (
       <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 backdrop-blur-sm">
          <Card className={cn("w-fit", className)} {...props}>
-            <CardContent className="flex flex-col items-center gap-4 p-6">
+            <CardContent className="flex flex-col items-center gap-4 p-6 w-[10dvw]">
                <div className="animate-in fade-in-50">
                   <svg
                      className={cn("animate-spin", variant === "default" ? "text-primary" : "text-muted-foreground")}

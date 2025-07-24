@@ -13,8 +13,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getRoleBadgeVariant, getRoleDisplayName } from "@/lib/utils";
 import type { User } from "@/server/auth";
+import { useTRPC } from "@/server/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash2, UserCheck } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+   AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 export const columns: ColumnDef<User>[] = [
    {
@@ -120,6 +135,24 @@ export const columns: ColumnDef<User>[] = [
       enableHiding: false,
       cell: ({ row }) => {
          const user = row.original;
+         const trpc = useTRPC();
+         const queryClient = useQueryClient();
+
+         const { mutate: deleteUser } = useMutation(
+            trpc.user.delete.mutationOptions({
+               onSuccess: () => {
+                  toast.success("Usuário excluído com sucesso");
+                  queryClient.invalidateQueries({
+                     queryKey: trpc.user.getAll.queryOptions({
+                        organizationId: user.organizationId!,
+                        // unitId: user.unitId ?? undefined,
+                     }).queryKey,
+                  });
+               },
+            }),
+         );
+
+         const [isOpen, setIsOpen] = useState(false);
 
          return (
             <DropdownMenu>
@@ -142,10 +175,41 @@ export const columns: ColumnDef<User>[] = [
                      Alterar função
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
-                     <Trash2 className="mr-2 h-4 w-4" />
-                     {user.banned ? "Reativar usuário" : "Banir usuário"}
-                  </DropdownMenuItem>
+                  <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+                     <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                           className="text-destructive"
+                           onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsOpen(true);
+                           }}
+                        >
+                           <Trash2 size={8} color="red" />
+                           Excluir usuário
+                        </DropdownMenuItem>
+                     </AlertDialogTrigger>
+                     <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                        <AlertDialogHeader>
+                           <AlertDialogTitle>{`Excluir usuário ${user.name}?`}</AlertDialogTitle>
+                           <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. Tem certeza de que deseja excluir este usuário?
+                           </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                           <AlertDialogAction
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 deleteUser({ id: user.id });
+                              }}
+                              className="bg-red-500 hover:bg-red-600"
+                           >
+                              Excluir
+                           </AlertDialogAction>
+                        </AlertDialogFooter>
+                     </AlertDialogContent>
+                  </AlertDialog>
                </DropdownMenuContent>
             </DropdownMenu>
          );

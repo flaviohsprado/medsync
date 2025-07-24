@@ -54,6 +54,7 @@ export const ProfileFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),
    description: z.string().min(1, "Descrição é obrigatória"),
    organizationId: z.string().min(1, "Organização é obrigatória"),
+   systemRole: z.enum(["super_admin", "admin", "user"]),
    permissions: z
       .array(
          z.object({

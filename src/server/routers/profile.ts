@@ -70,7 +70,8 @@ export const profileRouter = createTRPCRouter({
             name: input.name,
             description: input.description,
             organizationId: input.organizationId!,
-            permissions: input.permissions as unknown as Permission[],
+            permissions: input.permissions,
+            systemRole: input.systemRole,
          })
          .returning();
 

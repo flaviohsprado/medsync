@@ -14,7 +14,7 @@ interface InputSelectFieldProps {
    label?: string;
 }
 
-export function InputSelectField({ form, placeholder, name, label, options, onChange }: InputSelectFieldProps) {
+export function InputSelectField({ form, placeholder, name, label, options }: InputSelectFieldProps) {
    return (
       <FormField
          control={form.control}
@@ -50,7 +50,6 @@ export function InputSelectField({ form, placeholder, name, label, options, onCh
                                        key={option.value}
                                        onSelect={() => {
                                           field.onChange(option.value);
-                                          onChange?.(option.value);
                                        }}
                                     >
                                        {option.label}

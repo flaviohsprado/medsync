@@ -13,7 +13,6 @@ export function UserProfileForm({ profiles, form }: UserProfileFormProps) {
       label: profile.name,
       value: profile.id,
    }));
-   const watchedSystemRole = form.watch("systemRole");
 
    return (
       <div className="space-y-4">

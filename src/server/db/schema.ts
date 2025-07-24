@@ -18,6 +18,7 @@ export const profile = pgTable(
          .$defaultFn(() => crypto.randomUUID()),
       name: text("name").notNull(),
       description: text("description").notNull(),
+      systemRole: text("system_role").notNull(),
       organizationId: text("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),

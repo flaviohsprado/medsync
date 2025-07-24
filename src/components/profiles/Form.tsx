@@ -39,8 +39,6 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
    const queryClient = useQueryClient();
    const { id: organizationId } = useParams({ from: "/organizations/$id/profiles/" });
 
-   const [profileType, setProfileType] = useState<"user" | "admin" | "super_admin">("user");
-
    const { mutate: createProfile, isPending } = useMutation(
       trpc.profile.create.mutationOptions({
          onSuccess: () => {
@@ -56,19 +54,21 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
       }),
    );
 
-   const form = useForm<ProfileFormData>({
+   const [profileType, setProfileType] = useState<"user" | "admin" | "super_admin">("user");
+   const form = useForm<ProfileFormData, any, ProfileFormData>({
       resolver: zodResolver(ProfileFormSchema),
       defaultValues: {
          name: "",
          description: "",
          organizationId,
          permissions: [],
+         systemRole: profileType,
       },
    });
 
    const toggleAction = (resource: string, action: "create" | "read" | "update" | "delete", enabled: boolean) => {
       const currentPermissions = form.getValues().permissions || [];
-      let newPermissions = [...currentPermissions];
+      const newPermissions = [...currentPermissions];
       const permissionIndex = newPermissions.findIndex((p) => p.resource === resource);
 
       if (enabled) {
@@ -104,8 +104,12 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
       form.setValue("permissions", newPermissions, { shouldValidate: true });
    };
 
-   const handleFinish = form.handleSubmit(async (data) => {
-      let finalData = { ...data };
+   const handleFinish = form.handleSubmit(async (data: ProfileFormData) => {
+      const finalData: ProfileFormData = {
+         ...data,
+         systemRole: profileType as "super_admin" | "admin" | "user",
+         organizationId,
+      };
 
       // If the profile type is admin or super_admin, override permissions with all available permissions.
       if (profileType === "admin" || profileType === "super_admin") {
