@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "../db/auth-schema";
 import { profile } from "../db/schema";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
    // Get current user's permissions
@@ -31,7 +31,7 @@ export const userRouter = createTRPCRouter({
       return [];
    }),
 
-   listAll: protectedProcedure
+   listAll: adminProcedure
       .input(
          z
             .object({
