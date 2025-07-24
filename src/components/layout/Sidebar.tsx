@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ADMIN_NAV_ITEMS, ORGANIZATION_NAV_ITEMS, SYSTEM_NAV_ITEMS, UNIT_NAV_ITEMS } from "@/constants";
+import {
+   ADMIN_NAV_ITEMS,
+   ADMIN_UNIT_NAV_ITEMS,
+   ORGANIZATION_NAV_ITEMS,
+   SYSTEM_NAV_ITEMS,
+   UNIT_NAV_ITEMS,
+} from "@/constants";
 import { useSession } from "@/lib/auth-client";
 import { usePermissions } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -35,31 +41,33 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       const { systemRole } = user;
       const isUnitContext = "unitId" in params && params.unitId;
 
-      // Start with the base items for the current context
-      let baseItems = isUnitContext ? UNIT_NAV_ITEMS : ORGANIZATION_NAV_ITEMS;
+      let baseItems = [];
 
-      // If the user is an admin or super_admin, add the administrative links
-      if (systemRole === "admin" || systemRole === "super_admin") {
-         baseItems = [...ADMIN_NAV_ITEMS, ...baseItems];
+      if (isUnitContext) {
+         baseItems = [...UNIT_NAV_ITEMS];
+         if (systemRole === "admin" || systemRole === "super_admin") {
+            baseItems = [...ADMIN_UNIT_NAV_ITEMS, ...baseItems];
+         }
+      } else {
+         baseItems = [...ORGANIZATION_NAV_ITEMS];
+         if (systemRole === "admin" || systemRole === "super_admin") {
+            baseItems = [...baseItems, ...ADMIN_NAV_ITEMS];
+         }
+         if (systemRole === "super_admin") {
+            baseItems = [...baseItems, ...SYSTEM_NAV_ITEMS];
+         }
       }
 
-      // Super Admins also see system-level items in the organization context
-      if (systemRole === "super_admin" && !isUnitContext) {
-         baseItems = [...SYSTEM_NAV_ITEMS, ...baseItems];
-      }
-
-      // Use a Set to prevent duplicate items if they exist in multiple lists
+      // Use a Set to prevent duplicate items
       const uniqueItems = Array.from(new Set(baseItems.map((item) => item.to))).map(
          (to) => baseItems.find((item) => item.to === to)!,
       );
 
       return uniqueItems.filter((item) => {
-         // Check if the user's role is allowed to see the item
          if (item.systemRoles && !item.systemRoles.includes(systemRole as SystemRole)) {
             return false;
          }
 
-         // Check if the user has the required permission for the action
          const permissionCheck = hasPermission(item.resource, item.action);
          return permissionCheck.allowed;
       });
@@ -92,7 +100,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             )}
          >
             <div className="flex flex-col h-full">
-               {/* Mobile Close Button */}
                <div className="flex items-center justify-between p-4 border-b md:hidden">
                   <h2 className="font-semibold">Menu</h2>
                   <Button variant="ghost" size="sm" onClick={onClose}>

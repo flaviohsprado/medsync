@@ -23,7 +23,7 @@ export const Route = createFileRoute("/organizations/$id/users/")({
 function RouteComponent() {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
-   const { id: organizationId } = useParams({ strict: false });
+   const { id: organizationId = "" } = useParams({ strict: false });
    const [isOpen, setIsOpen] = useState(false);
 
    const { data: users = [], isLoading, error } = useQuery(trpc.user.getAll.queryOptions({ organizationId }));

@@ -53,7 +53,6 @@ export type UserFormData = z.infer<typeof UserFormSchema>;
 export const ProfileFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),
    description: z.string().min(1, "Descrição é obrigatória"),
-   organizationId: z.string().min(1, "Organização é obrigatória"),
    systemRole: z.enum(["super_admin", "admin", "user"]),
    permissions: z
       .array(
@@ -64,5 +63,7 @@ export const ProfileFormSchema = z.object({
          }),
       )
       .optional(),
+   organizationId: z.string().min(1, "Organização é obrigatória"),
+   unitId: z.string().optional(),
 });
 export type ProfileFormData = z.infer<typeof ProfileFormSchema>;

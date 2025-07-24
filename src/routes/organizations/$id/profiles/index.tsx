@@ -1,4 +1,4 @@
-import { columns } from "@/components/profiles/columns";
+import { profileColumns } from "@/components/profiles/columns";
 import { ProfileForm } from "@/components/profiles/Form";
 import { DataTable } from "@/components/shared/Datatable";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
 import { withPermission } from "@/lib/route-protection";
 import { useTRPC } from "@/server/react";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Plus, Shield } from "lucide-react";
 import { useState } from "react";
 
@@ -29,6 +29,8 @@ export const Route = createFileRoute("/organizations/$id/profiles/")({
 
 function ProfilesPage() {
    const trpc = useTRPC();
+   const { id } = useParams({ from: "/organizations/$id/profiles/" });
+
    const { data: profiles = [] } = useQuery(trpc.profile.getAll.queryOptions());
 
    const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,12 +54,17 @@ function ProfilesPage() {
                      <DialogTitle>Criar Novo Perfil</DialogTitle>
                      <DialogDescription>Adicione um novo perfil ao sistema</DialogDescription>
                   </DialogHeader>
-                  <ProfileForm onOpenChange={setDialogOpen} />
+                  <ProfileForm organizationId={id} onOpenChange={setDialogOpen} />
                </DialogContent>
             </Dialog>
          </div>
 
-         <DataTable columns={columns} data={profiles} searchPlaceholder="Pesquisar perfis..." searchColumn="name" />
+         <DataTable
+            columns={profileColumns}
+            data={profiles}
+            searchPlaceholder="Pesquisar perfis..."
+            searchColumn="name"
+         />
 
          {profiles?.length === 0 && (
             <div className="text-center py-12">

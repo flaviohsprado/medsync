@@ -1,7 +1,7 @@
 import { ProfileFormSchema } from "@/lib/schemas";
 import type { Permission } from "@/types";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { profile } from "../db/schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -36,7 +36,10 @@ export const profileRouter = createTRPCRouter({
       // Admin can only see profiles in their organization
       if (ctx.user?.systemRole === "admin") {
          return await ctx.db.query.profile.findMany({
-            where: eq(profile.organizationId, ctx.user!.organizationId!),
+            where: and(
+               eq(profile.organizationId, ctx.user.organizationId),
+               eq(profile.unitId, ctx.user.unitId!),
+            ),
          });
       }
 
@@ -64,16 +67,7 @@ export const profileRouter = createTRPCRouter({
          });
       }
 
-      const [newProfile] = await ctx.db
-         .insert(profile)
-         .values({
-            name: input.name,
-            description: input.description,
-            organizationId: input.organizationId!,
-            permissions: input.permissions,
-            systemRole: input.systemRole,
-         })
-         .returning();
+      const [newProfile] = await ctx.db.insert(profile).values(input).returning();
 
       return newProfile;
    }),

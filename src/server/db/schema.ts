@@ -22,6 +22,7 @@ export const profile = pgTable(
       organizationId: text("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),
+      unitId: text("unit_id").references(() => unit.id, { onDelete: "cascade" }),
       permissions: jsonb("permissions").$type<Array<Permission>>().notNull().default([]),
       ...timestamps,
    },

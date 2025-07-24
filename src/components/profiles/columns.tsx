@@ -12,12 +12,14 @@ import type { Profile } from "@/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 
-export const columns: ColumnDef<Profile>[] = [
+export const profileColumns: ColumnDef<Profile>[] = [
    {
       id: "select",
       header: ({ table }) => (
          <Checkbox
-            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+            checked={
+               table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
             onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
          />

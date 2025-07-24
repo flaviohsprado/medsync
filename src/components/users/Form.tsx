@@ -6,7 +6,7 @@ import type { SystemRole } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
-import { Building2, Info, Shield, UserCog } from "lucide-react";
+import { Building2, Info, Shield } from "lucide-react";
 import { useEffect } from "react";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,31 +37,19 @@ const { Stepper } = defineStepper(
 );
 
 interface UserFormProps {
+   organizationId: string;
    userId?: string;
    onOpenChange?: (open: boolean) => void;
    onSuccess?: () => void;
-   organizationId?: string;
+   unitId?: string;
 }
 
-interface RoleOption {
-   value: "super_admin" | "admin" | "user";
-   label: string;
-   icon: typeof UserCog;
-}
-
-export function UserForm({ userId, onOpenChange, onSuccess, organizationId }: UserFormProps) {
+export function UserForm({ userId, onOpenChange, onSuccess, organizationId, unitId }: UserFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { id: routeOrgId } = useParams({ strict: false });
    const currentOrgId = organizationId || routeOrgId;
 
-   // Fetch current user to check permissions
-   const { data: currentUser } = useQuery({
-      ...trpc.user.getCurrentUser.queryOptions(),
-      enabled: true,
-   });
-
-   // Fetch existing user data if editing
    const { data: existingUser } = useQuery({
       ...trpc.user.getById.queryOptions({ id: userId! }),
       enabled: !!userId,
@@ -136,10 +124,6 @@ export function UserForm({ userId, onOpenChange, onSuccess, organizationId }: Us
 
    const getProfileSystemRole = (profileId: string | undefined): SystemRole => {
       const profile = profiles.find((p) => p.id === profileId);
-
-      console.log("getProfileSystemRole called with profileId:", profileId);
-      console.log("Available profiles:", profiles);
-
       return profile ? (profile.systemRole as SystemRole) : "user";
    };
 

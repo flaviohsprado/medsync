@@ -5,7 +5,6 @@ import { ProfileFormSchema, type ProfileFormData } from "@/lib/schemas";
 import { useTRPC } from "@/server/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "@tanstack/react-router";
 import { Settings, Shield } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -31,13 +30,14 @@ const { Stepper } = defineStepper(
 );
 
 interface ProfileFormProps {
+   organizationId: string;
+   unitId?: string;
    onOpenChange?: (open: boolean) => void;
 }
 
-export function ProfileForm({ onOpenChange }: ProfileFormProps) {
+export function ProfileForm({ organizationId, unitId, onOpenChange }: ProfileFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
-   const { id: organizationId } = useParams({ from: "/organizations/$id/profiles/" });
 
    const { mutate: createProfile, isPending } = useMutation(
       trpc.profile.create.mutationOptions({
@@ -60,13 +60,18 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
       defaultValues: {
          name: "",
          description: "",
-         organizationId,
          permissions: [],
          systemRole: profileType,
+         organizationId,
+         unitId,
       },
    });
 
-   const toggleAction = (resource: string, action: "create" | "read" | "update" | "delete", enabled: boolean) => {
+   const toggleAction = (
+      resource: string,
+      action: "create" | "read" | "update" | "delete",
+      enabled: boolean,
+   ) => {
       const currentPermissions = form.getValues().permissions || [];
       const newPermissions = [...currentPermissions];
       const permissionIndex = newPermissions.findIndex((p) => p.resource === resource);
@@ -109,6 +114,7 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
          ...data,
          systemRole: profileType as "super_admin" | "admin" | "user",
          organizationId,
+         unitId,
       };
 
       // If the profile type is admin or super_admin, override permissions with all available permissions.
@@ -161,7 +167,12 @@ export function ProfileForm({ onOpenChange }: ProfileFormProps) {
 
                      <Stepper.Controls>
                         {profileType === "user" && !methods.isFirst && (
-                           <Button type="button" variant="secondary" onClick={methods.prev} disabled={isPending}>
+                           <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={methods.prev}
+                              disabled={isPending}
+                           >
                               Anterior
                            </Button>
                         )}
