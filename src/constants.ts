@@ -97,15 +97,14 @@ export const ROUTE_PERMISSIONS: Record<string, RoutePermission> = {
    "/dashboard": { resource: "dashboard", action: "read" },
 } as const;
 
-export const ALL_NAVIGATION_ITEMS: NavItem[] = [
-   // --- Organization & Admin Level ---
+export const ORGANIZATION_NAV_ITEMS: NavItem[] = [
    {
       to: "/organizations/$id/dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
       resource: "dashboard",
       action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
+      systemRoles: ["super_admin", "admin"],
    },
    {
       to: "/organizations/$id/units",
@@ -115,6 +114,9 @@ export const ALL_NAVIGATION_ITEMS: NavItem[] = [
       action: "read",
       systemRoles: ["super_admin", "admin"],
    },
+];
+
+export const ADMIN_NAV_ITEMS: NavItem[] = [
    {
       to: "/organizations/$id/users",
       label: "Usuários",
@@ -131,28 +133,41 @@ export const ALL_NAVIGATION_ITEMS: NavItem[] = [
       action: "read",
       systemRoles: ["super_admin", "admin"],
    },
+];
+
+export const ADMIN_UNIT_NAV_ITEMS: NavItem[] = [
    {
-      to: "/organizations/$id/organizations",
-      label: "Organizações",
-      icon: Building2,
-      resource: "organization",
+      to: "/organizations/$id/units/$unitId/users",
+      label: "Usuários",
+      icon: UserPlus,
+      resource: "user",
       action: "read",
-      systemRoles: ["super_admin"],
+      systemRoles: ["super_admin", "admin"],
    },
-   // --- Unit Level ---
    {
-      to: "/organizations/$id/units/$unitId/patients",
-      label: "Pacientes",
-      icon: Users,
-      resource: "patient",
+      to: "/organizations/$id/units/$unitId/profiles",
+      label: "Perfis",
+      icon: Shield,
+      resource: "profile",
       action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
+      systemRoles: ["super_admin", "admin"],
    },
+];
+
+export const UNIT_NAV_ITEMS: NavItem[] = [
    {
       to: "/organizations/$id/units/$unitId/appointments",
       label: "Consultas",
       icon: Calendar,
       resource: "appointment",
+      action: "read",
+      systemRoles: ["super_admin", "admin", "user"],
+   },
+   {
+      to: "/organizations/$id/units/$unitId/patients",
+      label: "Pacientes",
+      icon: Users,
+      resource: "patient",
       action: "read",
       systemRoles: ["super_admin", "admin", "user"],
    },
@@ -164,45 +179,30 @@ export const ALL_NAVIGATION_ITEMS: NavItem[] = [
       action: "read",
       systemRoles: ["super_admin", "admin", "user"],
    },
-   /*{
-      to: "/organizations/$id/units/$unitId/schedule",
-      label: "Agenda",
-      icon: Clock,
-      resource: "schedule",
-      action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
-   },
+];
+
+export const SYSTEM_NAV_ITEMS: NavItem[] = [
    {
-      to: "/organizations/$id/units/$unitId/medical-records",
-      label: "Prontuários",
-      icon: FileText,
-      resource: "medical_record",
+      to: "/organizations/$id/organizations",
+      label: "Organizações",
+      icon: Building2,
+      resource: "organization",
       action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
+      systemRoles: ["super_admin"],
    },
-   {
-      to: "/organizations/$id/units/$unitId/prescriptions",
-      label: "Receitas",
-      icon: Pill,
-      resource: "prescription",
-      action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
-   },
-   {
-      to: "/organizations/$id/units/$unitId/reports",
-      label: "Relatórios",
-      icon: FileText,
-      resource: "report",
-      action: "read",
-      systemRoles: ["super_admin", "admin"],
-   },*/
-   // --- System Level ---
    {
       to: "/organizations/settings",
       label: "Configurações",
       icon: Settings,
-      resource: "settings",
+      resource: "settings", // Assuming 'settings' is a defined resource
       action: "read",
       systemRoles: ["super_admin", "admin"],
    },
+];
+
+export const ALL_NAVIGATION_ITEMS: NavItem[] = [
+   ...ORGANIZATION_NAV_ITEMS,
+   ...ADMIN_NAV_ITEMS,
+   ...UNIT_NAV_ITEMS,
+   ...SYSTEM_NAV_ITEMS,
 ];

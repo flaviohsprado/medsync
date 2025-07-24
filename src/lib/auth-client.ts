@@ -56,6 +56,13 @@ export const getPostAuthRedirectPath = async (): Promise<string> => {
       const role = user.role;
       // @ts-ignore
       const organizationId = user.organizationId;
+      // @ts-ignore
+      const unitId = user.unitId;
+
+      // NEW: If user is scoped to a unit, go directly to the unit's page
+      if (organizationId && unitId) {
+         return `/organizations/${organizationId}/units/${unitId}/appointments`;
+      }
 
       // For users with an organization, redirect to their organization dashboard
       if (organizationId) {

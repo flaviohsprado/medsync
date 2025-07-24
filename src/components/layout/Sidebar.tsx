@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ALL_NAVIGATION_ITEMS } from "@/constants";
+import { ADMIN_NAV_ITEMS, ORGANIZATION_NAV_ITEMS, SYSTEM_NAV_ITEMS, UNIT_NAV_ITEMS } from "@/constants";
 import { useSession } from "@/lib/auth-client";
 import { usePermissions } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -31,18 +31,39 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
    const filteredItems = useMemo(() => {
       if (!user) return [];
-      return ALL_NAVIGATION_ITEMS.filter((item) => {
-         if (item.systemRoles && !item.systemRoles.includes(user.systemRole as SystemRole)) {
+
+      const { systemRole } = user;
+      const isUnitContext = "unitId" in params && params.unitId;
+
+      // Start with the base items for the current context
+      let baseItems = isUnitContext ? UNIT_NAV_ITEMS : ORGANIZATION_NAV_ITEMS;
+
+      // If the user is an admin or super_admin, add the administrative links
+      if (systemRole === "admin" || systemRole === "super_admin") {
+         baseItems = [...ADMIN_NAV_ITEMS, ...baseItems];
+      }
+
+      // Super Admins also see system-level items in the organization context
+      if (systemRole === "super_admin" && !isUnitContext) {
+         baseItems = [...SYSTEM_NAV_ITEMS, ...baseItems];
+      }
+
+      // Use a Set to prevent duplicate items if they exist in multiple lists
+      const uniqueItems = Array.from(new Set(baseItems.map((item) => item.to))).map(
+         (to) => baseItems.find((item) => item.to === to)!,
+      );
+
+      return uniqueItems.filter((item) => {
+         // Check if the user's role is allowed to see the item
+         if (item.systemRoles && !item.systemRoles.includes(systemRole as SystemRole)) {
             return false;
          }
 
+         // Check if the user has the required permission for the action
          const permissionCheck = hasPermission(item.resource, item.action);
-         if (!permissionCheck.allowed) {
-            return false;
-         }
-         return true;
+         return permissionCheck.allowed;
       });
-   }, [user, hasPermission]);
+   }, [user, hasPermission, params]);
 
    const isActiveRoute = useCallback(
       (path: string) => {
@@ -61,10 +82,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
    return (
       <>
-         {/* Mobile Overlay */}
          {isOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} aria-hidden="true" />}
 
-         {/* Sidebar */}
          <aside
             className={cn(
                "fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-card border-r transition-transform duration-300 z-50",
@@ -81,7 +100,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </Button>
                </div>
 
-               {/* Navigation */}
                <nav className="flex-1 p-4 overflow-y-auto">
                   <ul className="space-y-2">
                      {filteredItems.map((item) => {
@@ -108,7 +126,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </ul>
                </nav>
 
-               {/* User Info */}
                <div className="p-4 border-t mt-auto">
                   <div className="flex items-center gap-3">
                      <div className="h-8 w-8 bg-muted rounded-full flex items-center justify-center">
