@@ -26,15 +26,7 @@ function RouteComponent() {
    const { id: organizationId } = useParams({ strict: false });
    const [isOpen, setIsOpen] = useState(false);
 
-   const {
-      data: users = [],
-      isLoading,
-      error,
-   } = useQuery(
-      trpc.user.getAll.queryOptions({
-         organizationId,
-      }),
-   );
+   const { data: users = [], isLoading, error } = useQuery(trpc.user.getAll.queryOptions({ organizationId }));
 
    if (error) {
       return (

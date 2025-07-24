@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Unit } from "@/types";
-import { Edit, Mail, MapPin, Phone, Trash2, Users } from "lucide-react";
+import { Edit, Hospital, Mail, MapPin, Phone, Trash2, Users } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface UnitCardProps {
@@ -17,8 +17,8 @@ export function UnitCard({ unit }: UnitCardProps) {
          <CardHeader className="pb-4">
             <div className="flex items-start justify-between">
                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-medical/10 rounded-lg flex items-center justify-center">
-                     <MapPin className="h-5 w-5 text-medical" />
+                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                     <Hospital className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                      <CardTitle className="text-lg">{unit.name}</CardTitle>
@@ -38,9 +38,9 @@ export function UnitCard({ unit }: UnitCardProps) {
          <CardContent className="space-y-4">
             <div className="space-y-2">
                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                     Endereço: {unit.address.street || "N/A"}, {unit.address.number || "N/A"} -{" "}
+                  <MapPin className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground text-wrap line-clamp-1">
+                     {unit.address.street || "N/A"}, {unit.address.number || "N/A"} -{" "}
                      {unit.address.neighborhood || "N/A"} - {unit.address.city || "N/A"} - {unit.address.state || "N/A"}
                   </p>
                </div>

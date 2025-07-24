@@ -31,7 +31,10 @@ import {
    AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
-export const userColumns: ColumnDef<User>[] = [
+type UserWithRelations = User & {
+   organization?: { name: string };
+};
+export const userColumns: ColumnDef<UserWithRelations>[] = [
    {
       id: "select",
       header: ({ table }) => (
@@ -85,12 +88,12 @@ export const userColumns: ColumnDef<User>[] = [
       },
    },
    {
-      accessorKey: "organizationId",
+      accessorKey: "organization.name",
       header: "Organização",
       cell: ({ row }) => {
-         const orgId = row.getValue("organizationId") as string;
-         return orgId ? (
-            <div className="text-sm">{orgId}</div>
+         const orgName = row.original.organization?.name;
+         return orgName ? (
+            <div className="text-sm text-wrap line-clamp-1">{orgName}</div>
          ) : (
             <div className="text-sm text-muted-foreground">Todas</div>
          );

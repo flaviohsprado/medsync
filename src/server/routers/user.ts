@@ -1,7 +1,7 @@
 import { PERMISSIONS } from "@/constants";
 import { UserFormSchema } from "@/lib/schemas";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "../db/auth-schema";
 import { profile } from "../db/schema";
@@ -76,32 +76,28 @@ export const userRouter = createTRPCRouter({
       .query(async ({ ctx, input }) => {
          const whereConditions: any[] = [];
 
-         // Super admin can see all users
-         if (ctx.user?.systemRole === "super_admin") {
-            if (input.organizationId) {
-               whereConditions.push(eq(user.organizationId, input.organizationId));
-            }
-            if (input.unitId) {
-               whereConditions.push(eq(user.unitId, input.unitId));
-            }
-         }
-         // Admin can only see users in their organization
-         else if (ctx.user?.systemRole === "admin") {
+         if (ctx.user?.systemRole === "admin") {
             whereConditions.push(eq(user.organizationId, ctx.user.organizationId!));
             if (input.unitId) {
                whereConditions.push(eq(user.unitId, input.unitId));
             }
          }
-         // Regular users can only see themselves
-         else {
-            whereConditions.push(eq(user.id, ctx.user!.id));
-         }
+
+         whereConditions.push(not(eq(user.id, ctx.user.id)));
 
          const whereClause = whereConditions.length > 1 ? and(...whereConditions) : whereConditions[0];
 
          const result = whereClause
-            ? await ctx.db.select().from(user).where(whereClause)
-            : await ctx.db.select().from(user);
+            ? await ctx.db.query.user.findMany({
+                 where: whereClause,
+                 orderBy: (user, { asc }) => [asc(user.name)],
+                 with: {
+                    organization: true,
+                 },
+              })
+            : await ctx.db.query.user.findMany({
+                 orderBy: (user, { asc }) => [asc(user.name)],
+              });
 
          return result;
       }),

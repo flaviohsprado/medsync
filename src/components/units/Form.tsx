@@ -36,7 +36,21 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
-   const { mutate: createUnit, isPending } = useMutation(trpc.unit.create.mutationOptions());
+   const { mutate: createUnit, isPending } = useMutation(
+      trpc.unit.create.mutationOptions({
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.unit.getByOrganization.queryOptions({ organizationId }).queryKey,
+            });
+            toast.success("Posto de saúde criado com sucesso");
+            form.reset();
+            onOpenChange(false);
+         },
+         onError: (error) => {
+            toast.error(`Erro ao criar posto de saúde: ${error.message}`);
+         },
+      }),
+   );
 
    const form = useForm<UnitFormData>({
       resolver: zodResolver(UnitFormSchema),
@@ -76,14 +90,6 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
          },
          organizationId,
       });
-
-      queryClient.invalidateQueries({
-         queryKey: ["health-units", organizationId],
-      });
-
-      form.reset();
-      toast.success("Organização criada");
-      onOpenChange(false);
    };
 
    const onError = (errors: FieldErrors<UnitFormData>) => {
@@ -91,25 +97,22 @@ export function HealthUnitForm({ organizationId, onOpenChange }: HealthUnitFormP
    };
 
    const handleNext = async (methods: any) => {
-      // Since methods.current.id is not available, we'll determine the step based on navigation state
       if (!methods.isLast) {
-         // We're on the information step if not on last step
          const fieldsToValidate = ["name", "email", "phone", "manager", "specialties"] as const;
+
          const isValid = await form.trigger(fieldsToValidate);
-         if (isValid) {
-            methods.next();
-         }
+
+         if (isValid) methods.next();
       } else {
-         // We're on the address step (last step)
          methods.next();
       }
    };
 
    const handleFinish = async () => {
+      form.setValue("organizationId", organizationId);
       const isValid = await form.trigger();
-      if (isValid) {
-         form.handleSubmit(onSubmit, onError)();
-      }
+      if (!isValid) return;
+      form.handleSubmit(onSubmit, onError)();
    };
 
    return (

@@ -89,6 +89,14 @@ export const usersRelations = relations(user, ({ one }) => ({
       fields: [user.profileId],
       references: [profile.id],
    }),
+   organization: one(organization, {
+      fields: [user.organizationId],
+      references: [organization.id],
+   }),
+   unit: one(unit, {
+      fields: [user.unitId],
+      references: [unit.id],
+   }),
 }));
 
 export const profilesRelations = relations(profile, ({ one }) => ({
