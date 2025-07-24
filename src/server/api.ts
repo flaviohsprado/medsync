@@ -2,11 +2,10 @@ import { canAccessRoute, hasPermission } from "@/lib/permissions";
 import { auth, type User } from "@/server/auth";
 import { db } from "@/server/db";
 import type { Context } from "@/types";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { eq } from "drizzle-orm";
 import { organization, profile, user } from "./db/schema";
 
-export const createTRPCContext = async (opts: CreateNextContextOptions): Promise<Context> => {
+export const createTRPCContext = async (opts: { req: Request }): Promise<Context> => {
    const { req } = opts;
    const session = await auth.api.getSession({ headers: req.headers });
 
