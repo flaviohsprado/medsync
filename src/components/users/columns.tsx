@@ -31,7 +31,7 @@ import {
    AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
-export const columns: ColumnDef<User>[] = [
+export const userColumns: ColumnDef<User>[] = [
    {
       id: "select",
       header: ({ table }) => (
@@ -80,9 +80,6 @@ export const columns: ColumnDef<User>[] = [
          return (
             <div className="flex flex-col gap-1">
                <Badge variant={getRoleBadgeVariant(systemRole)}>{getRoleDisplayName(systemRole)}</Badge>
-               {user.systemRole === "user" && user.profileId && (
-                  <div className="text-xs text-muted-foreground">Perfil: {user.profileId}</div>
-               )}
             </div>
          );
       },

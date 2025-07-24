@@ -27,13 +27,17 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 const isAuthed = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-   if (!resolvedCtx.user) {
+   const context = await ctx;
+   if (!context.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
    }
 
+   if (!context.user.organizationId) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "User is not part of an organization" });
+   }
+
    return next({
-      ctx: resolvedCtx,
+      ctx: context,
    });
 });
 
@@ -46,6 +50,10 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
          code: "FORBIDDEN",
          message: "The user doesn't exists",
       });
+   }
+
+   if (!resolvedCtx.user.organizationId) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "User is not part of an organization" });
    }
 
    if (user.systemRole !== "admin" && user.systemRole !== "super_admin") {

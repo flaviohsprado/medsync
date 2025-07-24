@@ -23,7 +23,7 @@ export const auth = betterAuth({
       additionalFields: {
          organizationId: {
             type: "string",
-            required: false,
+            required: true,
          },
          unitId: {
             type: "string",

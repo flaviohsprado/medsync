@@ -1,14 +1,24 @@
+import { ac, admin, super_admin } from "@/lib/permissions";
 import { adminClient, multiSessionClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
    baseURL: typeof window !== "undefined" ? window.location.origin : "",
-   plugins: [adminClient(), multiSessionClient()],
+   plugins: [
+      adminClient({
+         ac,
+         roles: {
+            admin: admin,
+            super_admin: super_admin,
+         },
+      }),
+      multiSessionClient(),
+   ],
    user: {
       additionalFields: {
          organizationId: {
             type: "string",
-            required: false,
+            required: true,
          },
          unitId: {
             type: "string",
@@ -46,12 +56,6 @@ export const getPostAuthRedirectPath = async (): Promise<string> => {
       const role = user.role;
       // @ts-ignore
       const organizationId = user.organizationId;
-
-      // For super admins, redirect to settings or first available organization
-      /*if (role === "super_admin") {
-         // Could redirect to a super admin dashboard or organization selector
-         return "/settings";
-      }*/
 
       // For users with an organization, redirect to their organization dashboard
       if (organizationId) {

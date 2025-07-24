@@ -8,7 +8,7 @@ import {
    DialogTitle,
    DialogTrigger,
 } from "@/components/ui/dialog";
-import { columns } from "@/components/users/columns";
+import { userColumns } from "@/components/users/columns";
 import { UserForm } from "@/components/users/Form";
 import { useTRPC } from "@/server/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,7 +94,7 @@ function RouteComponent() {
                </div>
             </div>
          ) : (
-            <DataTable columns={columns} data={users} searchPlaceholder="Buscar usuários..." searchColumn="name" />
+            <DataTable columns={userColumns} data={users} searchPlaceholder="Buscar usuários..." searchColumn="name" />
          )}
       </div>
    );

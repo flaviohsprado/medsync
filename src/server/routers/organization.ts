@@ -2,7 +2,7 @@ import { OrganizationFormSchema } from "@/lib/schemas";
 import { TRPCError } from "@trpc/server";
 import { eq, or } from "drizzle-orm";
 import z from "zod";
-import { organization } from "../db/schema";
+import { organization, user } from "../db/schema";
 import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const organizationRouter = createTRPCRouter({
@@ -83,6 +83,20 @@ export const organizationRouter = createTRPCRouter({
       };
 
       return buildHierarchy(response);
+   }),
+
+   getUsers: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+      const users = await ctx.db.query.user.findMany({
+         where: eq(user.organizationId, input.id),
+         with: {
+            profile: true,
+         },
+      });
+
+      return users.map((u) => ({
+         ...u,
+         profile: u.profile ? { ...u.profile, permissions: u.profile.permissions ?? [] } : null,
+      }));
    }),
 
    create: adminProcedure.input(OrganizationFormSchema).mutation(async ({ ctx, input }) => {

@@ -26,7 +26,7 @@ const statement = {
 export const ac = createAccessControl(statement);
 
 // Super Admin: Global access across all organizations
-export const superAdmin = ac.newRole({
+export const super_admin = ac.newRole({
    ...adminAc.statements,
    organization: ["create", "read", "update", "delete"],
    unit: ["create", "read", "update", "delete"],
