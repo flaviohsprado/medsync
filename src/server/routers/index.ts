@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "../trpc";
 import { appointmentRouter } from "./appointment";
+import { doctorRouter } from "./doctor";
 import { organizationRouter } from "./organization";
 import { profileRouter } from "./profile";
 import { unitRouter } from "./unit";
@@ -11,6 +12,7 @@ export const trpcRouter = createTRPCRouter({
    unit: unitRouter,
    profile: profileRouter,
    user: userRouter,
+   doctor: doctorRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

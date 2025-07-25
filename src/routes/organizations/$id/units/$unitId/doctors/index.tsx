@@ -1,23 +1,92 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { doctorColumns } from "@/components/doctors/columns";
+import { DataTable } from "@/components/shared/Datatable";
+import { Button } from "@/components/ui/button";
+import {
+   Dialog,
+   DialogContent,
+   DialogDescription,
+   DialogHeader,
+   DialogTitle,
+   DialogTrigger,
+} from "@/components/ui/dialog";
+import { useTRPC } from "@/server/react";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/organizations/$id/units/$unitId/doctors/")({
    component: RouteComponent,
 });
 
 function RouteComponent() {
+   const trpc = useTRPC();
+   const { id: organizationId = "", unitId = "" } = useParams({ strict: false });
+   const [isOpen, setIsOpen] = useState(false);
+
+   const {
+      data: doctors = [],
+      isLoading,
+      error,
+   } = useQuery(trpc.doctor.getAll.queryOptions({ organizationId, unitId }));
+
+   if (error) {
+      return (
+         <div className="space-y-6">
+            <div className="flex items-center justify-center min-h-[400px]">
+               <div className="text-center">
+                  <h2 className="text-lg font-semibold text-red-600">Erro ao carregar usuários</h2>
+                  <p className="text-muted-foreground">{error.message}</p>
+               </div>
+            </div>
+         </div>
+      );
+   }
+
    return (
       <div className="space-y-6">
-         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Médicos</h1>
-            <p className="text-muted-foreground">Visualize os médicos da unidade de saúde</p>
+         <div className="flex items-center justify-between">
+            <div>
+               <h1 className="text-2xl font-bold">Médicos</h1>
+               <p className="text-muted-foreground">Gerencie todos os médicos do sistema</p>
+            </div>
+            <div className="flex gap-2">
+               <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                  <DialogTrigger asChild>
+                     <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo Médico
+                     </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                     <DialogHeader>
+                        <DialogTitle>Criar Novo Usuário</DialogTitle>
+                        <DialogDescription>
+                           Adicione um novo usuário ao sistema com função e permissões específicas
+                        </DialogDescription>
+                     </DialogHeader>
+                     {/* Here you would include your DoctorForm component */}
+                     {/* <DoctorForm organizationId={organizationId} unitId={unitId} onClose={() => setIsOpen(false)} /> */}
+                  </DialogContent>
+               </Dialog>
+            </div>
          </div>
 
-         <div className="border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Lista de Médicos</h2>
-            <p className="text-muted-foreground">
-               Esta página será implementada para mostrar os médicos disponíveis na unidade.
-            </p>
-         </div>
+         {isLoading ? (
+            <div className="flex items-center justify-center min-h-[200px]">
+               <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-muted-foreground">Carregando usuários...</p>
+               </div>
+            </div>
+         ) : (
+            <DataTable
+               columns={doctorColumns}
+               data={doctors as any}
+               searchPlaceholder="Buscar usuários..."
+               searchColumn="name"
+            />
+         )}
       </div>
    );
 }
