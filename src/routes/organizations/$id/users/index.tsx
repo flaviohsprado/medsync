@@ -11,18 +11,18 @@ import {
 import { userColumns } from "@/components/users/columns";
 import { UserForm } from "@/components/users/Form";
 import { useTRPC } from "@/server/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/organizations/$id/users/")({
    component: RouteComponent,
+   ssr: true,
 });
 
 function RouteComponent() {
    const trpc = useTRPC();
-   const queryClient = useQueryClient();
    const { id: organizationId = "" } = useParams({ strict: false });
    const [isOpen, setIsOpen] = useState(false);
 

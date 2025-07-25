@@ -342,17 +342,14 @@ export const script: (...args: any[]) => void = (
 };
 
 export const ThemeToggler = () => {
-   const { theme, setTheme, forcedTheme, themes } = useTheme();
+   const { theme, setTheme } = useTheme();
 
-   const nextTheme = React.useMemo(() => {
-      if (forcedTheme) return forcedTheme;
-      if (theme === "dark") return "light";
-      if (theme === "light") return "dark";
-      return themes.includes("dark") ? "dark" : "light";
-   }, [theme, forcedTheme, themes]);
+   const handleChangeTheme = (theme: string) => {
+      return theme === "dark" ? "light" : "dark";
+   };
 
    return (
-      <Button variant={"ghost"} onClick={() => setTheme(nextTheme)}>
+      <Button variant={"ghost"} onClick={() => setTheme(handleChangeTheme)}>
          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
       </Button>
    );

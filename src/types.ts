@@ -68,6 +68,12 @@ export interface NavItem {
 }
 
 export type AppointmentStatus = "scheduled" | "confirmed" | "completed" | "cancelled";
+export enum AppointmentStatusEnum {
+   SCHEDULED = "scheduled",
+   CONFIRMED = "confirmed",
+   COMPLETED = "completed",
+   CANCELLED = "cancelled",
+}
 
 export interface Appointment {
    id: string;

@@ -1,7 +1,7 @@
 import type { AddressFormData } from "@/lib/schemas";
-import type { Permission } from "@/types";
+import { AppointmentStatusEnum, type Permission } from "@/types";
 import { relations } from "drizzle-orm";
-import { index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 export * from "./auth-schema";
 
@@ -9,6 +9,8 @@ const timestamps = {
    createdAt: timestamp("created_at").defaultNow(),
    updatedAt: timestamp("updated_at").defaultNow(),
 };
+
+const appointmentStatus = pgEnum("appointment_status", AppointmentStatusEnum);
 
 export const profile = pgTable(
    "profile",
@@ -78,6 +80,13 @@ export const appointment = pgTable(
       unitId: text("unit_id")
          .notNull()
          .references(() => unit.id, { onDelete: "cascade" }),
+      patientId: text("patient_id").references(() => user.id, { onDelete: "cascade" }),
+      doctorId: text("doctor_id").references(() => user.id, { onDelete: "cascade" }),
+      date: timestamp("date").notNull(),
+      time: text("time").notNull(),
+      duration: integer("duration").notNull(),
+      notes: text("notes"),
+      status: appointmentStatus("status"),
       ...timestamps,
    },
    (table) => [index("appointment_unit_id_idx").on(table.unitId)],
