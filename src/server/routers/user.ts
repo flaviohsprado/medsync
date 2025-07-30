@@ -5,7 +5,7 @@ import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "../db/auth-schema";
 import { profile } from "../db/schema";
-import { adminProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
    // Get current user's permissions
@@ -30,41 +30,6 @@ export const userRouter = createTRPCRouter({
 
       return [];
    }),
-
-   listAll: adminProcedure
-      .input(
-         z
-            .object({
-               limit: z.number().optional(),
-               offset: z.number().optional(),
-            })
-            .optional(),
-      )
-      .query(async ({ ctx, input }) => {
-         const systemRole = ctx.user?.systemRole;
-
-         if (systemRole !== "super_admin") {
-            throw new TRPCError({
-               code: "FORBIDDEN",
-               message: "Acesso negado. Apenas Super Administradores podem executar esta ação.",
-            });
-         }
-
-         try {
-            const limit = input?.limit ?? 100;
-            const offset = input?.offset ?? 0;
-
-            const users = await ctx.db.select().from(user).limit(limit).offset(offset);
-
-            return users;
-         } catch (error) {
-            console.error("Erro interno ao buscar usuários:", error);
-            throw new TRPCError({
-               code: "INTERNAL_SERVER_ERROR",
-               message: "Falha ao buscar a lista de usuários.",
-            });
-         }
-      }),
 
    getAll: protectedProcedure
       .input(
@@ -165,10 +130,7 @@ export const userRouter = createTRPCRouter({
          });
       }
 
-      console.log("Creating user with input:", input);
-
       try {
-         // Use Better Auth to create the user
          const newUser = await ctx.auth.api.signUpEmail({
             body: {
                email: input.email,

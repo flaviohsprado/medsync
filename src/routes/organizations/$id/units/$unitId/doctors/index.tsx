@@ -1,4 +1,5 @@
 import { doctorColumns } from "@/components/doctors/columns";
+import { DoctorForm } from "@/components/doctors/Form";
 import { DataTable } from "@/components/shared/Datatable";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,20 +54,23 @@ function RouteComponent() {
             <div className="flex gap-2">
                <Dialog open={isOpen} onOpenChange={setIsOpen}>
                   <DialogTrigger asChild>
-                     <Button>
-                        <Plus className="h-4 w-4 mr-2" />
+                     <Button variant={"default"} size="sm" className="cursor-pointer">
+                        <Plus className="h-4 w-4 mr-1" />
                         Novo Médico
                      </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                      <DialogHeader>
-                        <DialogTitle>Criar Novo Usuário</DialogTitle>
+                        <DialogTitle>Criar Novo Médico</DialogTitle>
                         <DialogDescription>
-                           Adicione um novo usuário ao sistema com função e permissões específicas
+                           Adicione um novo médico ao sistema preenchendo os detalhes abaixo.
                         </DialogDescription>
                      </DialogHeader>
-                     {/* Here you would include your DoctorForm component */}
-                     {/* <DoctorForm organizationId={organizationId} unitId={unitId} onClose={() => setIsOpen(false)} /> */}
+                     <DoctorForm
+                        organizationId={organizationId}
+                        unitId={unitId}
+                        onClose={() => setIsOpen(false)}
+                     />
                   </DialogContent>
                </Dialog>
             </div>

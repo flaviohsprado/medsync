@@ -16,14 +16,16 @@ export const t = initTRPC.context<ReturnType<typeof createTRPCContext>>().create
    },
 });
 
-const timingMiddleware = t.middleware(async ({ next, path }) => {
+const timingMiddleware = t.middleware(async ({ ctx, next, path }) => {
+   const context = await ctx;
    const start = Date.now();
-   const result = await next();
    const end = Date.now();
 
    console.info(`[TRPC] ${path} took ${end - start}ms to execute`);
 
-   return result;
+   return next({
+      ctx: context,
+   });
 });
 
 const isAuthed = t.middleware(async ({ ctx, next }) => {
@@ -42,8 +44,8 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
 });
 
 const isAdmin = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-   const user = resolvedCtx.user;
+   const context = await ctx;
+   const user = context.user;
 
    if (!user) {
       throw new TRPCError({
@@ -52,7 +54,7 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
       });
    }
 
-   if (!resolvedCtx.user.organizationId) {
+   if (!context.user.organizationId) {
       throw new TRPCError({ code: "UNAUTHORIZED", message: "User is not part of an organization" });
    }
 
@@ -64,7 +66,7 @@ const isAdmin = t.middleware(async ({ ctx, next }) => {
    }
 
    return next({
-      ctx: resolvedCtx,
+      ctx: context,
    });
 });
 

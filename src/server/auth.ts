@@ -21,6 +21,10 @@ export const auth = betterAuth({
    },
    user: {
       additionalFields: {
+         phone: {
+            type: "string",
+            required: false,
+         },
          organizationId: {
             type: "string",
             required: true,
@@ -35,6 +39,18 @@ export const auth = betterAuth({
             defaultValue: "user",
          },
          profileId: {
+            type: "string",
+            required: false,
+         },
+         crm: {
+            type: "string",
+            required: false,
+         },
+         specialties: {
+            type: "string[]",
+            required: false,
+         },
+         workSchedule: {
             type: "string",
             required: false,
          },

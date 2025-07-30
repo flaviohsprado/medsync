@@ -42,7 +42,9 @@ export function UserProfileForm({ profiles, form }: UserProfileFormProps) {
                      );
                   }
                   return (
-                     <p className="text-sm text-blue-800">Este usuário terá acesso baseado no perfil selecionado.</p>
+                     <p className="text-sm text-blue-800">
+                        Este usuário terá acesso baseado no perfil selecionado.
+                     </p>
                   );
                })()}
             </div>

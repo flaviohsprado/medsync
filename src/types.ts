@@ -1,13 +1,19 @@
 import type { LinkOptions } from "@tanstack/react-router";
 import type { Auth, Session, User } from "./server/auth";
 import type { Db } from "./server/db";
-import type { organization, profile, unit, user } from "./server/db/schema";
+import type { appointment, organization, profile, unit, user } from "./server/db/schema";
+
+type CustomOption = {
+   label: string;
+   value: string;
+};
+export type CustomOptions = Array<CustomOption>;
 
 export type UserDB = typeof user.$inferSelect;
 export type Organization = typeof organization.$inferSelect;
 export type Unit = typeof unit.$inferSelect;
 export type Profile = typeof profile.$inferSelect;
-// export type Appointment = typeof appointment.$inferSelect;
+export type Appointment = typeof appointment.$inferSelect;
 
 export type Context = {
    headers: Headers;
@@ -75,19 +81,6 @@ export enum AppointmentStatusEnum {
    CANCELLED = "cancelled",
 }
 
-export interface Appointment {
-   id: string;
-   patientId: string;
-   doctorId: string;
-   dateTime: Date;
-   duration: number; // minutes
-   status: AppointmentStatus;
-   notes?: string;
-   createdBy: string;
-   createdAt: Date;
-   updatedAt: Date;
-}
-
 export interface AppointmentWithDetails extends Appointment {
    patientName: string;
    doctorName: string;
@@ -108,8 +101,18 @@ export interface Patient {
    updatedAt: Date;
 }
 
+export enum WeekDays {
+   SUNDAY = "sunday",
+   MONDAY = "monday",
+   TUESDAY = "tuesday",
+   WEDNESDAY = "wednesday",
+   THURSDAY = "thursday",
+   FRIDAY = "friday",
+   SATURDAY = "saturday",
+}
+
 export interface OfficeHours {
-   dayOfWeek: number; // 0-6 (Sunday-Saturday)
+   dayOfWeek: WeekDays; // "monday", "tuesday", etc.
    startTime: string; // "09:00"
    endTime: string; // "17:00"
    isActive: boolean;

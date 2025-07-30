@@ -168,7 +168,7 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
                      <SelectValue placeholder="Filtrar por médico" />
                   </SelectTrigger>
                   <SelectContent>
-                     <SelectItem value="all">Todos os médicos</SelectItem>
+                     <SelectItem value="all">Todos</SelectItem>
                      {doctorData && <SelectItem value={doctorData.id}>{doctorData.name}</SelectItem>}
                   </SelectContent>
                </Select>

@@ -1,4 +1,15 @@
+import { WeekDays } from "@/types";
 import z from "zod";
+
+export const DayOfWeek = z.enum(WeekDays);
+
+export const WorkScheduleSchema = z.object({
+   dayOfWeek: DayOfWeek,
+   startTime: z.string().min(1, "Hora de início é obrigatória"),
+   endTime: z.string().min(1, "Hora de término é obrigatória"),
+   isActive: z.boolean(),
+});
+export type WorkScheduleFormData = z.infer<typeof WorkScheduleSchema>;
 
 export const SignInFormSchema = z.object({
    email: z.string().email("Please enter a valid email address"),
@@ -49,6 +60,23 @@ export const UserFormSchema = z.object({
 });
 export type UserFormData = z.infer<typeof UserFormSchema>;
 
+export const DoctorFormSchema = z.object({
+   name: z.string().min(1, "Nome é obrigatório"),
+   email: z.string().email("Email inválido"),
+   password: z.string().min(1, "Senha é obrigatória").optional(),
+   organizationId: z.string().min(1, "Organização é obrigatória"),
+   unitId: z.string().optional(),
+   systemRole: z.enum(["super_admin", "admin", "user"]),
+   profileId: z.string().optional(),
+   crm: z.string().min(1, "CRM é obrigatório"),
+   specialties: z
+      .array(z.string().min(1, "Especialidade é obrigatória"))
+      .min(1, "Pelo menos uma especialidade é obrigatória"),
+   phone: z.string().min(1, "Telefone é obrigatório"),
+   workSchedule: z.array(WorkScheduleSchema).min(1, "Pelo menos um horário de trabalho é obrigatório"),
+});
+export type DoctorFormData = z.infer<typeof DoctorFormSchema>;
+
 export const ProfileFormSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),
    description: z.string().min(1, "Descrição é obrigatória"),
@@ -66,3 +94,16 @@ export const ProfileFormSchema = z.object({
    unitId: z.string().optional(),
 });
 export type ProfileFormData = z.infer<typeof ProfileFormSchema>;
+
+export const AppointmentFormSchema = z.object({
+   unitId: z.string(),
+   doctorId: z.string(),
+   date: z.string(),
+   time: z.string(),
+   duration: z.number(),
+   patientName: z.string(),
+   patientPhone: z.string(),
+   patientSUSCard: z.string(),
+   notes: z.string().optional(),
+});
+export type AppointmentFormData = z.infer<typeof AppointmentFormSchema>;
