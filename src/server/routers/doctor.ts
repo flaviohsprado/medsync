@@ -14,7 +14,7 @@ export const doctorRouter = createTRPCRouter({
       .query(async ({ ctx, input }) => {
          const whereConditions: any[] = [];
 
-         whereConditions.push(not(eq(user.crm, "")));
+         // whereConditions.push(not(eq(user.crm, "")));
 
          if (ctx.user?.systemRole === "admin") {
             whereConditions.push(eq(user.organizationId, ctx.user.organizationId!));
