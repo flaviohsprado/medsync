@@ -12,8 +12,8 @@ import {
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getRoleBadgeVariant, getRoleDisplayName } from "@/lib/utils";
-import type { User } from "@/server/auth";
 import { useTRPC } from "@/server/react";
+import type { User } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Edit, MoreHorizontal, Trash2 } from "lucide-react";

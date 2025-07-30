@@ -1,5 +1,5 @@
 import type { LinkOptions } from "@tanstack/react-router";
-import type { Auth, Session, User } from "./server/auth";
+import type { Auth, Session } from "./server/auth";
 import type { Db } from "./server/db";
 import type { appointment, organization, profile, unit, user } from "./server/db/schema";
 
@@ -9,11 +9,12 @@ type CustomOption = {
 };
 export type CustomOptions = Array<CustomOption>;
 
-export type UserDB = typeof user.$inferSelect;
+export type User = typeof user.$inferSelect;
 export type Organization = typeof organization.$inferSelect;
 export type Unit = typeof unit.$inferSelect;
 export type Profile = typeof profile.$inferSelect;
 export type Appointment = typeof appointment.$inferSelect;
+export type SystemRole = (typeof user.$inferSelect)["systemRole"];
 
 export type Context = {
    headers: Headers;
@@ -31,16 +32,14 @@ export type Context = {
    canAccessRoute: (route: string) => boolean;
 };
 
+export type PermissionAction = "read" | "create" | "update" | "delete" | "impersonate";
+
 export interface Permission {
    resource: string;
-   actions: ("create" | "read" | "update" | "delete")[];
+   actions: Array<PermissionAction>;
    scope?: "organization" | "unit" | "self";
 }
 
-// Simplified permission system with only 3 roles
-export type SystemRole = "super_admin" | "admin" | "user";
-
-// Permission checking result
 export interface PermissionCheckResult {
    allowed: boolean;
    reason?: string;

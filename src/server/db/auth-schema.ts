@@ -1,5 +1,5 @@
 import { boolean, jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-export const systemRole = pgEnum("system_role", ["admin", "super_admin", "user"]);
+export const systemRole = pgEnum("system_role", ["admin", "super_admin", "user", "doctor"]);
 
 export const user = pgTable("user", {
    id: text("id").primaryKey(),

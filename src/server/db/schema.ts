@@ -2,7 +2,7 @@ import type { AddressFormData } from "@/lib/schemas";
 import { AppointmentStatusEnum, type Permission } from "@/types";
 import { relations } from "drizzle-orm";
 import { index, integer, jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./auth-schema";
+import { systemRole, user } from "./auth-schema";
 export * from "./auth-schema";
 
 const timestamps = {
@@ -20,7 +20,7 @@ export const profile = pgTable(
          .$defaultFn(() => crypto.randomUUID()),
       name: text("name").notNull(),
       description: text("description").notNull(),
-      systemRole: text("system_role").notNull(),
+      systemRole: systemRole("system_role").default("user").notNull(),
       organizationId: text("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),

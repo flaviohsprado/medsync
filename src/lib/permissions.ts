@@ -1,9 +1,8 @@
 import { PERMISSIONS, ROUTE_PERMISSIONS } from "@/constants";
-import type { User } from "@/server/auth";
 import type { Db } from "@/server/db";
 import { profile } from "@/server/db/schema";
 import { useTRPC } from "@/server/react";
-import type { Permission, PermissionCheckResult, SystemRole } from "@/types";
+import type { Permission, PermissionAction, PermissionCheckResult, SystemRole, User } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { createAccessControl } from "better-auth/plugins/access";
 import { adminAc } from "better-auth/plugins/organization/access";
@@ -56,10 +55,24 @@ export const admin = ac.newRole({
    profile: ["read", "create", "update", "delete"], // Manage profiles in their org
 });
 
+export const doctor = ac.newRole({
+   dashboard: ["read"],
+   appointment: ["read", "create", "update", "delete"],
+   patient: ["read", "create", "update"],
+   medical_record: ["read", "create", "update"],
+   prescription: ["read", "create", "update"],
+   schedule: ["read", "update"],
+   // Doctors cannot access organization or user management
+   organization: [],
+   unit: [],
+   user: [],
+   profile: [],
+   report: [],
+});
+
 // User: Basic access (permissions will be defined by admin through profiles)
 export const user = ac.newRole({
    dashboard: ["read"],
-   // Other permissions will be defined by admin through profiles
 });
 
 // Permission middleware for TRPC
@@ -111,31 +124,10 @@ export function requireRole(role: "super_admin" | "admin" | "user") {
    };
 }
 
-// Available permissions that can be assigned to profiles
-
-// Route permission definitions
-
-/**
- * Check if user has permission for a specific resource and action
- *
- * Simplified permission checking that:
- * - Validates system role hierarchy (super_admin > admin > user)
- * - Checks organization boundaries for admin users
- * - Evaluates profile-based permissions for regular users (defined by admin)
- * - Provides detailed failure reasons
- *
- * @param user - The user to check permissions for
- * @param resource - The resource being accessed (e.g., "patient", "appointment")
- * @param action - The action being performed ("create", "read", "update", "delete")
- * @param targetOrganizationId - Optional organization ID for cross-org access checks
- * @param targetUnitId - Optional unit ID for cross-unit access checks
- * @param cachedPermissions - Optional cached permissions array for performance
- * @returns PermissionCheckResult with allowed status and reason if denied
- */
 export function hasPermission(
    user: User,
    resource: string,
-   action: "create" | "read" | "update" | "delete",
+   action: PermissionAction,
    targetOrganizationId?: string,
    targetUnitId?: string,
    cachedPermissions?: Permission[],
@@ -158,7 +150,7 @@ export function hasPermission(
    }
 
    // Regular users need specific permissions defined by admin through profiles
-   if (user.systemRole === "user") {
+   if (user.role === "user") {
       // Check organization boundary first
       if (targetOrganizationId && user.organizationId !== targetOrganizationId) {
          return { allowed: false, reason: "Access denied to different organization" };
@@ -261,6 +253,7 @@ export function hasRequiredRole(user: User, requiredRole: SystemRole): boolean {
    if (!user) return false;
 
    const roleHierarchy: Record<SystemRole, number> = {
+      doctor: 1,
       user: 1,
       admin: 2,
       super_admin: 3,
@@ -373,7 +366,7 @@ export function usePermissions() {
    return {
       user: user,
       permissions: userPermissions || [],
-      hasPermission: (resource: string, action: "create" | "read" | "update" | "delete") => {
+      hasPermission: (resource: string, action: PermissionAction) => {
          if (!user) return { allowed: false, reason: "Not authenticated" };
          return hasPermission(user, resource, action, undefined, undefined, userPermissions);
       },

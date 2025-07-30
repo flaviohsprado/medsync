@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { DoctorFormSchema, type DoctorFormData } from "@/lib/schemas";
 import { useTRPC } from "@/server/react";
-import type { SystemRole } from "@/types";
 import { WeekDays } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -95,7 +94,7 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
          password: "",
          organizationId: currentOrgId || "",
          unitId: unitId ?? "",
-         systemRole: "user",
+         systemRole: "doctor",
          profileId: "",
          crm: "",
          phone: "",
@@ -124,14 +123,7 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
       }
    }, [existingUser, form, currentOrgId]);
 
-   const getProfileSystemRole = (profileId: string | undefined): SystemRole => {
-      const profile = profiles.find((p) => p.id === profileId);
-      return profile ? (profile.systemRole as SystemRole) : "user";
-   };
-
    const onSubmit = (data: DoctorFormData) => {
-      const systemRole = getProfileSystemRole(data.profileId);
-
       if (userId) {
          updateUser({
             id: userId,
@@ -140,7 +132,7 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
                email: data.email,
                organizationId: data.organizationId,
                unitId: data.unitId || undefined,
-               systemRole,
+               systemRole: "doctor",
                profileId: data.profileId || undefined,
             },
          });
@@ -151,7 +143,7 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
             password: data.password!,
             organizationId: data.organizationId,
             unitId: data.unitId!,
-            systemRole,
+            systemRole: "doctor",
             profileId: data.profileId || undefined,
          });
       }
@@ -163,9 +155,6 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
 
    const handleFinish = async () => {
       const isValid = await form.trigger();
-      console.log("Validation result for INFORMATION step:", isValid);
-      console.log("Form errors:", form.formState.dirtyFields);
-      console.log("Form:", form.getValues());
 
       if (isValid) {
          form.handleSubmit(onSubmit, onError)();
@@ -187,8 +176,6 @@ export function DoctorForm({ userId, onClose, organizationId, unitId }: DoctorFo
             if (isValid) methods.next();
          } else if (methods.current.id === DoctorFormStep.TECHNICAL) {
             const isValid = await form.trigger(["crm", "specialties"]);
-            console.log("Validation result for TECHNICAL step:", isValid);
-            console.log("Form errors:", form.getValues());
             if (isValid) methods.next();
          }
       } else {

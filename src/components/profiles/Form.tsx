@@ -119,7 +119,13 @@ export function ProfileForm({ organizationId, unitId, onOpenChange }: ProfileFor
 
       // If the profile type is admin or super_admin, override permissions with all available permissions.
       if (profileType === "admin" || profileType === "super_admin") {
-         finalData.permissions = PERMISSIONS.map((p) => ({ ...p, scope: "organization" }));
+         finalData.permissions = PERMISSIONS.map((permission) => {
+            const resource = permission.resource;
+
+            if (resource === "user") permission.actions.push("impersonate");
+
+            return { ...permission, scope: "organization" };
+         });
       }
 
       // Ensure user profiles have at least one permission.

@@ -1,4 +1,4 @@
-import type { Permission } from "@/types";
+import type { Permission, SystemRole } from "@/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs));
 }
 
-export function getRoleBadgeVariant(role: string) {
+export function getRoleBadgeVariant(role: SystemRole): "destructive" | "default" | "secondary" | "outline" {
    switch (role) {
       case "super_admin":
          return "destructive"; // Red for super admin
@@ -14,12 +14,14 @@ export function getRoleBadgeVariant(role: string) {
          return "default"; // Blue for admin
       case "user":
          return "secondary"; // Gray for regular users
+      case "doctor":
+         return "secondary";
       default:
          return "outline";
    }
 }
 
-export function getRoleDisplayName(role: string) {
+export function getRoleDisplayName(role: SystemRole) {
    switch (role) {
       case "super_admin":
          return "Super Admin";
@@ -27,6 +29,8 @@ export function getRoleDisplayName(role: string) {
          return "Administrador";
       case "user":
          return "Usuário";
+      case "doctor":
+         return "Médico";
       default:
          return role;
    }
@@ -111,7 +115,8 @@ export const formatCPF = (value: string): string => {
    const digitsOnly = value.replace(/\D/g, "");
    if (digitsOnly.length <= 3) return digitsOnly;
    if (digitsOnly.length <= 6) return `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3)}`;
-   if (digitsOnly.length <= 9) return `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3, 6)}.${digitsOnly.slice(6)}`;
+   if (digitsOnly.length <= 9)
+      return `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3, 6)}.${digitsOnly.slice(6)}`;
    return `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3, 6)}.${digitsOnly.slice(6, 9)}-${digitsOnly.slice(9, 11)}`;
 };
 
@@ -119,7 +124,8 @@ export const formatPhone = (value: string): string => {
    const digitsOnly = value.replace(/\D/g, "");
    if (digitsOnly.length <= 2) return `(${digitsOnly}`;
    if (digitsOnly.length <= 6) return `(${digitsOnly.slice(0, 2)}) ${digitsOnly.slice(2)}`;
-   if (digitsOnly.length <= 10) return `(${digitsOnly.slice(0, 2)}) ${digitsOnly.slice(2, 6)}-${digitsOnly.slice(6)}`;
+   if (digitsOnly.length <= 10)
+      return `(${digitsOnly.slice(0, 2)}) ${digitsOnly.slice(2, 6)}-${digitsOnly.slice(6)}`;
    return `(${digitsOnly.slice(0, 2)}) ${digitsOnly.slice(2, 7)}-${digitsOnly.slice(7, 11)}`;
 };
 

@@ -2,6 +2,7 @@ import { WeekDays } from "@/types";
 import z from "zod";
 
 export const DayOfWeek = z.enum(WeekDays);
+const SystemRoles = z.enum(["super_admin", "admin", "user", "doctor"]);
 
 export const WorkScheduleSchema = z.object({
    dayOfWeek: DayOfWeek,
@@ -55,7 +56,7 @@ export const UserFormSchema = z.object({
    password: z.string().min(1, "Senha é obrigatória").optional(),
    organizationId: z.string().min(1, "Organização é obrigatória"),
    unitId: z.string().optional(),
-   systemRole: z.enum(["super_admin", "admin", "user"]),
+   systemRole: SystemRoles,
    profileId: z.string().optional(),
 });
 export type UserFormData = z.infer<typeof UserFormSchema>;
@@ -66,7 +67,7 @@ export const DoctorFormSchema = z.object({
    password: z.string().min(1, "Senha é obrigatória").optional(),
    organizationId: z.string().min(1, "Organização é obrigatória"),
    unitId: z.string().optional(),
-   systemRole: z.enum(["super_admin", "admin", "user"]),
+   systemRole: SystemRoles,
    profileId: z.string().optional(),
    crm: z.string().min(1, "CRM é obrigatório"),
    specialties: z
@@ -85,7 +86,9 @@ export const ProfileFormSchema = z.object({
       .array(
          z.object({
             resource: z.string().min(1, "Recurso é obrigatório"),
-            actions: z.array(z.enum(["create", "read", "update", "delete"])).min(1, "Ações são obrigatórias"),
+            actions: z
+               .array(z.enum(["create", "read", "update", "delete", "impersonate"]))
+               .min(1, "Ações são obrigatórias"),
             scope: z.enum(["organization", "unit", "self"]).optional(),
          }),
       )

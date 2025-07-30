@@ -73,8 +73,6 @@ export const profileRouter = createTRPCRouter({
          });
       }
 
-      console.log("Creating profile with input:", input);
-
       await ctx.db.insert(profile).values(input).execute();
    }),
 

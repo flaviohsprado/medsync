@@ -10,7 +10,6 @@ import { useSession } from "@/lib/auth-client";
 import { usePermissions } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useTRPC } from "@/server/react";
-import type { SystemRole } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import { X } from "lucide-react";
@@ -39,12 +38,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       if (!user) return [];
 
       const { systemRole } = user;
+
       const isUnitContext = "unitId" in params && params.unitId;
 
       let baseItems = [];
 
       if (isUnitContext) {
          baseItems = [...UNIT_NAV_ITEMS];
+
          if (systemRole === "admin" || systemRole === "super_admin") {
             baseItems = [...ADMIN_UNIT_NAV_ITEMS, ...baseItems];
          }
@@ -64,7 +65,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       );
 
       return uniqueItems.filter((item) => {
-         if (item.systemRoles && !item.systemRoles.includes(systemRole as SystemRole)) {
+         if (item.systemRoles && !item.systemRoles.includes(systemRole)) {
             return false;
          }
 
@@ -90,7 +91,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
    return (
       <>
-         {isOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} aria-hidden="true" />}
+         {isOpen && (
+            <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} aria-hidden="true" />
+         )}
 
          <aside
             className={cn(
@@ -136,7 +139,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                <div className="p-4 border-t mt-auto">
                   <div className="flex items-center gap-3">
                      <div className="h-8 w-8 bg-muted rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium">{session?.user?.name?.charAt(0).toUpperCase()}</span>
+                        <span className="text-sm font-medium">
+                           {session?.user?.name?.charAt(0).toUpperCase()}
+                        </span>
                      </div>
                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{session?.user?.name}</p>
@@ -144,7 +149,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                            {user?.systemRole?.replace("_", " ")}
                         </p>
                         {organization && (
-                           <p className="text-xs text-muted-foreground/70 truncate">Org: {organization.name}</p>
+                           <p className="text-xs text-muted-foreground/70 truncate">
+                              Org: {organization.name}
+                           </p>
                         )}
                      </div>
                   </div>

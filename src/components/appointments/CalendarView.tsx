@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatTime } from "@/lib/utils";
 import type { AppointmentWithDetails } from "@/types";
-import { ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppointmentForm } from "./Form";
@@ -64,7 +64,7 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
 
    const getAppointmentsForDate = (date: Date) => {
       return appointments.filter((apt) => {
-         const aptDate = new Date(apt.dateTime);
+         const aptDate = new Date(apt.date);
          return aptDate.toDateString() === date.toDateString();
       });
    };
@@ -122,8 +122,8 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
    };
 
    const handleAppointmentClick = (appointment: AppointmentWithDetails) => {
-      setSelectedDate(new Date(appointment.dateTime));
-      setSelectedTime(formatTime(new Date(appointment.dateTime)));
+      setSelectedDate(new Date(appointment.date));
+      setSelectedTime(formatTime(new Date(appointment.time)));
       setSelectedAppointment(appointment);
       setIsFormOpen(true);
    };
@@ -211,8 +211,8 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
          <Card>
             <CardContent className="p-6">
                <div className="flex items-center gap-2 mb-6">
-                  <div className="h-6 w-6 bg-primary rounded flex items-center justify-center">
-                     <span className="text-xs text-primary-foreground">📅</span>
+                  <div className="h-6 w-6 rounded flex items-center justify-center">
+                     <Calendar />
                   </div>
                   <h2 className="text-xl font-semibold">Calendário de apontamentos</h2>
                   <span className="text-muted-foreground">
@@ -234,10 +234,10 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
                                        <h3 className="font-semibold">{appointment.patientName}</h3>
                                        <p className="text-sm text-muted-foreground">Consulta</p>
                                        <p className="text-sm">
-                                          {formatTime(new Date(appointment.dateTime))} -
+                                          {formatTime(new Date(appointment.date))} -
                                           {formatTime(
                                              new Date(
-                                                new Date(appointment.dateTime).getTime() +
+                                                new Date(appointment.time).getTime() +
                                                    appointment.duration * 60000,
                                              ),
                                           )}
@@ -276,7 +276,7 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
                               <div className="bg-background p-2 text-sm text-muted-foreground">{hour}:00</div>
                               {getWeekDates().map((date, dayIndex) => {
                                  const dayAppointments = getAppointmentsForDate(date).filter((apt) => {
-                                    const aptHour = new Date(apt.dateTime).getHours();
+                                    const aptHour = new Date(apt.time).getHours();
                                     return aptHour === hour;
                                  });
 
@@ -296,7 +296,7 @@ export function CalendarViews({ appointments, doctorData }: CalendarViewsProps) 
                               }}*/
                                           >
                                              <div className="font-medium">
-                                                {formatTime(new Date(appointment.dateTime))} -{" "}
+                                                {formatTime(new Date(appointment.date))} -{" "}
                                                 {appointment.patientName}
                                              </div>
                                           </div>

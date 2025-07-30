@@ -1,5 +1,6 @@
 import { PERMISSIONS } from "@/constants";
 import { UserFormSchema } from "@/lib/schemas";
+import type { Permission } from "@/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
@@ -9,17 +10,34 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
    // Get current user's permissions
-   getPermissions: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.systemRole === "super_admin" || ctx.user.systemRole === "admin") {
+   getPermissions: protectedProcedure.query(async ({ ctx }): Promise<Permission[]> => {
+      const role = ctx.user.systemRole;
+
+      if (role === "super_admin" || role === "admin") {
          return PERMISSIONS;
       }
 
-      // Regular users get permissions from their profile
-      if (ctx.user.systemRole === "user" && ctx.user.profileId) {
+      if (role === "doctor") {
+         return [
+            {
+               resource: "patient",
+               actions: ["create", "read", "update"],
+               scope: "unit",
+            },
+            {
+               resource: "appointment",
+               actions: ["create", "read", "update"],
+               scope: "unit",
+            },
+         ];
+      }
+
+      if (role === "user" && ctx.user.profileId) {
          try {
             const userProfile = await ctx.db.query.profile.findFirst({
                where: eq(profile.id, ctx.user.profileId),
             });
+
             if (userProfile) {
                return userProfile.permissions || [];
             }

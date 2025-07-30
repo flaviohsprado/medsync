@@ -161,7 +161,7 @@ export const UNIT_NAV_ITEMS: NavItem[] = [
       icon: Calendar,
       resource: "appointment",
       action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
+      systemRoles: ["super_admin", "admin", "user", "doctor"],
    },
    {
       to: "/organizations/$id/units/$unitId/patients",
@@ -169,7 +169,7 @@ export const UNIT_NAV_ITEMS: NavItem[] = [
       icon: Users,
       resource: "patient",
       action: "read",
-      systemRoles: ["super_admin", "admin", "user"],
+      systemRoles: ["super_admin", "admin", "user", "doctor"],
    },
    {
       to: "/organizations/$id/units/$unitId/doctors",
